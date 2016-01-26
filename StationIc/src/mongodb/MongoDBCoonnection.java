@@ -87,7 +87,7 @@ public class MongoDBCoonnection {
 	public MongoClient getRemoteClient(){
 		if(remoteClient ==null){
 			MongoClientURI connectionString = new MongoClientURI(
-				"mongodb://cpss:123456@192.168.1.131:27017/?authSource=gps_ic");
+				"mongodb://cpss:123456@192.168.1.104:27017/?authSource=gps_ic");
 			remoteClient = new MongoClient(connectionString);
 		}
 		
@@ -108,7 +108,7 @@ public class MongoDBCoonnection {
 	public MongoClient getRemoteMongoClient2(){
 		if(remoteClient2 ==null){
 		MongoClientURI connectionString = new MongoClientURI(
-				"mongodb://cpss:123456@192.168.1.131:27017/?authSource=gps_ic");
+				"mongodb://cpss:123456@192.168.1.104:27017/?authSource=gps_ic");
 		remoteClient2 = new MongoClient(connectionString);
 		}
 		return remoteClient2;
@@ -116,7 +116,7 @@ public class MongoDBCoonnection {
 	public MongoClient getRemoteMongoClient3(){
 		if(remoteClient3 ==null){
 		MongoClientURI connectionString = new MongoClientURI(
-				"mongodb://cpss:123456@192.168.1.131:27017/?authSource=gps_ic");
+				"mongodb://cpss:123456@192.168.1.104:27017/?authSource=gps_ic");
 		remoteClient3 = new MongoClient(connectionString);
 		}
 		return remoteClient3;

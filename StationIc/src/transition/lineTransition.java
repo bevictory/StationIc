@@ -194,6 +194,47 @@ public class lineTransition {
 		}
 		System.out.println("the sparse of line-associate model is: "+(double)num/(4*station*stateSpace*stateSpace*stateSpace));
 	}
+	
+	public static double [][][] getTensor_3order(){
+		String startTime = "2015-11-10 06:30:00";
+		String endTime = "2015-11-12 09:00:00" ;
+		ArrayList<String> segment =new ArrayList<String>(); 
+		segment.add("35610028");segment.add("35557702");segment.add("35632502");segment.add("35641294");
+		//ArrayList<Integer> arr = new ArrayList<Integer>();
+		MongoDatabase mongodb= MongoDBCoonnection.getInstance().getRemoteMongoDatabase2();
+		int segmentId;double [][][]tensor = new double[stateSpace][stateSpace][stateSpace];
+		for(int i=0;i<1;i++){
+			if(i<segment.size()){
+				segmentId =Integer.valueOf(segment.get(i));
+				int j=3;{
+					ArrayList<Integer> array =null,array2 =null,array3 =null,array4 =null;
+					ArrayList<ArrayList<Integer>> arr= new ArrayList<ArrayList<Integer>>();
+					array=GetIcArray.getIC_int(mongodb, segmentId, j, startTime, endTime);
+					for(int k=0;k<segment.size();k++){
+						if(k!=i) {
+							if(j <QueryBls.getStationNum(mongodb,Integer.valueOf(segment.get(k)) ))
+								arr.add(GetIcArray.getIC_int(mongodb,Integer.valueOf(segment.get(k)), j, startTime, endTime));
+							else 
+								arr.add(GetIcArray.getIC_int(mongodb,Integer.valueOf(segment.get(k)), QueryBls.getStationNum(mongodb,Integer.valueOf(segment.get(k)) ), startTime, endTime));
+						}
+					}
+					array2= arr.get(0);
+					array3= arr.get(1);
+					array4= arr.get(2);
+				
+				array=GetIcArray.getIC_int(mongodb, segmentId, j, startTime, endTime);
+				
+				
+				array2=GetIcArray.getIC_int(mongodb, segmentId, j-1, startTime, endTime);
+				array3=GetIcArray.getIC_int(mongodb, segmentId, j+1, startTime, endTime);
+				tensor = toTrans_line(array, array2, array3, array4);
+				//out.println();
+				System.out.println(array);
+				}
+			}			
+		}
+		return tensor;
+	}
 	public static void main(String[] args){
 
 		String startTime = "2015-11-10 06:30:00";

@@ -32,7 +32,7 @@ import mongodb.QueryBls;
 public class stationTransition {
 	private static int lineNum =4;
 	private static int station = 35;
-	private static  int stateSpace = 35;
+	private static  int stateSpace = 20;
 	private static MongoDatabase mongodb= MongoDBCoonnection.getInstance().getRemoteMongoDatabase2();
 	public static double[][][][][] getTranTensor_station(String startTime, String endTime){
 		ArrayList<String> segment =new ArrayList<String>(); 
@@ -119,7 +119,8 @@ public class stationTransition {
 						tranMatrix[i][j][k] /= sum[i][j];
 					// else tranMatrix[i][i] =1;
 					else {
-						tranMatrix[i][j][k] = 1.0 / ( stateSpace);
+						//tranMatrix[i][j][k] = 1.0 / ( stateSpace);
+						tranMatrix[i][j][j] = 2.0;
 					}
 				}
 
@@ -195,6 +196,32 @@ public class stationTransition {
 			}
 		}
 		System.out.println("the sparse of station-associate model is: "+(double)num/(4*station*stateSpace*stateSpace*stateSpace));
+	}
+	public static double [][][] getTensor_3order(){
+		String startTime = "2015-11-10 06:30:00";
+		String endTime = "2015-11-12 09:00:00" ;
+		ArrayList<String> segment =new ArrayList<String>(); 
+		segment.add("35610028");segment.add("35557702");segment.add("35632502");segment.add("35641294");
+		ArrayList<Integer> arr = new ArrayList<Integer>();
+		MongoDatabase mongodb= MongoDBCoonnection.getInstance().getRemoteMongoDatabase2();
+		int segmentId;double [][][]tensor = new double[stateSpace][stateSpace][stateSpace];
+		for(int i=0;i<1;i++){
+			if(i<segment.size()){
+				segmentId =Integer.valueOf(segment.get(i));
+				int j=3;{
+				ArrayList<Integer> array =null, array2 = null, array3 = null;
+				array=GetIcArray.getIC_int(mongodb, segmentId, j, startTime, endTime);
+				
+				
+				array2=GetIcArray.getIC_int(mongodb, segmentId, j-1, startTime, endTime);
+				array3=GetIcArray.getIC_int(mongodb, segmentId, j+1, startTime, endTime);
+				tensor = toTrans_station(array, array2, array3);
+				//out.println();
+				System.out.println(array);
+				}
+			}			
+		}
+		return tensor;
 	}
 	public static void main(String[] args){
 

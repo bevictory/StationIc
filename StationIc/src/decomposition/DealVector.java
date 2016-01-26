@@ -42,5 +42,11 @@ public class DealVector {
 		}
 		return Math.sqrt(result);
 	}
+	public static void print(double [] v, int n){
+		for(int i=0;i<n;i++){ 
+			System.out.print(v[i]+" ");
+		}
+		System.out.println();
+	}
 
 }

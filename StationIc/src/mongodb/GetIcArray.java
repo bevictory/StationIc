@@ -34,7 +34,7 @@ import util.Time;
   * @since	[产品/模块版本]
   */
 public class GetIcArray {
-	private static String collectionName;
+	private static String collectionName = "gps_11_10_IC";
 	private static  int stateSpace = 20;
 	public static void getIcAsArray(MongoDatabase mongodb,int segmentId, int sngSerialId,
 		String startTime, String endTime,final ArrayList<Document> array){
