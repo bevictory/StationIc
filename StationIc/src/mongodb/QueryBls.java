@@ -29,8 +29,9 @@ import com.mongodb.client.MongoDatabase;
   * @since	[产品/模块版本]
   */
 public class QueryBls {
+	private static String collectionName ="BusLineStation";
 	public static int getSegmentId(MongoDatabase mongodb,String subRouteId,String runDirection){
-		MongoCollection<Document> collection = mongodb.getCollection("buslinestation");
+		MongoCollection<Document> collection = mongodb.getCollection(collectionName);
 		ArrayList<Document> list = new ArrayList<Document>();
 		list.add(new Document("subRouteInfoId",Integer.valueOf(subRouteId)));
 		list.add(new Document("runDirection",Integer.valueOf(runDirection)));
@@ -39,7 +40,7 @@ public class QueryBls {
 		else return 0;
 	}
 	public static ArrayList<Integer> getSgRd(MongoDatabase mongodb,String subRouteId,String dualserialid){
-		MongoCollection<Document> collection = mongodb.getCollection("buslinestation");
+		MongoCollection<Document> collection = mongodb.getCollection(collectionName);
 		ArrayList<Document> list = new ArrayList<Document>();ArrayList<Integer> array = new ArrayList<Integer>();
 		list.add(new Document("subRouteInfoId",Integer.valueOf(subRouteId)));
 		list.add(new Document("station.dualserialId",Integer.valueOf(dualserialid)));
@@ -61,7 +62,7 @@ public class QueryBls {
 		ArrayList<BasicDBObject> list = new ArrayList<BasicDBObject>();
 		list.add(new BasicDBObject("subRouteInfoId",Integer.valueOf(subRouteId)));
 		list.add(new BasicDBObject("station.dualserialId",Integer.valueOf(dualserialid)));
-		DBCursor cursor =mongodb.getCollection("buslinestation").find(new BasicDBObject("$and",list),new BasicDBObject("lineId",1).append("station.$",1));
+		DBCursor cursor =mongodb.getCollection(collectionName).find(new BasicDBObject("$and",list),new BasicDBObject("lineId",1).append("station.$",1));
 		BasicDBObject doc = null;
 		
 		if(cursor.iterator().hasNext()) doc=(BasicDBObject) cursor.iterator().next();
@@ -99,7 +100,7 @@ public class QueryBls {
 		ArrayList<BasicDBObject> list = new ArrayList<BasicDBObject>();
 		list.add(new BasicDBObject("lineId",segmentId));
 		list.add(new BasicDBObject("station.stationId",stationId));
-		DBCursor cursor =mongodb.getCollection("buslinestation").find(new BasicDBObject("$and",list),new BasicDBObject("station.$.sngSerialId",1));
+		DBCursor cursor =mongodb.getCollection(collectionName).find(new BasicDBObject("$and",list),new BasicDBObject("station.$.sngSerialId",1));
 		BasicDBObject doc = null;		
 		if(cursor.iterator().hasNext()) doc=(BasicDBObject) cursor.iterator().next();
 		else {			
@@ -112,7 +113,7 @@ public class QueryBls {
 	}
 	public static int getStationNum(MongoDatabase mongodb,int segmentId){
 		
-		FindIterable<Document> iter =mongodb.getCollection("buslinestation").find(new Document("lineId",segmentId));
+		FindIterable<Document> iter =mongodb.getCollection(collectionName).find(new Document("lineId",segmentId));
 		Document doc = null;
 		
 		if(iter.iterator().hasNext()) doc=(Document) iter.iterator().next();
@@ -128,7 +129,7 @@ public class QueryBls {
 		ArrayList<BasicDBObject> list = new ArrayList<BasicDBObject>();
 		list.add(new BasicDBObject("lineId",segmentId));
 		list.add(new BasicDBObject("station.sngSerialId",sngSerialId));
-		DBCursor cursor =mongodb.getCollection("buslinestation").find(new BasicDBObject("$and",list),new BasicDBObject("station.$",1));
+		DBCursor cursor =mongodb.getCollection(collectionName).find(new BasicDBObject("$and",list),new BasicDBObject("station.$",1));
 		BasicDBObject doc = null;		
 		if(cursor.iterator().hasNext()) doc=(BasicDBObject) cursor.iterator().next();
 		else {			

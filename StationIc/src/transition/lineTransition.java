@@ -117,7 +117,8 @@ public class lineTransition {
 						tranMatrix[i][j][k] /= sum[i][j];
 					// else tranMatrix[i][i] =1;
 					else {
-						tranMatrix[i][j][k] = 1.0 / ( stateSpace);
+						//tranMatrix[i][j][k] = 1.0 / ( stateSpace);
+						tranMatrix[i][j][j] = 2.0;
 					}
 				}
 
@@ -210,10 +211,14 @@ public class lineTransition {
 					ArrayList<Integer> array =null,array2 =null,array3 =null,array4 =null;
 					ArrayList<ArrayList<Integer>> arr= new ArrayList<ArrayList<Integer>>();
 					array=GetIcArray.getIC_int(mongodb, segmentId, j, startTime, endTime);
+					System.out.println("segment size "+segment.size());
 					for(int k=0;k<segment.size();k++){
-						if(k!=i) {
-							if(j <QueryBls.getStationNum(mongodb,Integer.valueOf(segment.get(k)) ))
+						if(k!=i) {System.out.println("k "+k);
+							if(j <QueryBls.getStationNum(mongodb,Integer.valueOf(segment.get(k)) )){
 								arr.add(GetIcArray.getIC_int(mongodb,Integer.valueOf(segment.get(k)), j, startTime, endTime));
+								
+							}
+								
 							else 
 								arr.add(GetIcArray.getIC_int(mongodb,Integer.valueOf(segment.get(k)), QueryBls.getStationNum(mongodb,Integer.valueOf(segment.get(k)) ), startTime, endTime));
 						}
@@ -222,14 +227,13 @@ public class lineTransition {
 					array3= arr.get(1);
 					array4= arr.get(2);
 				
-				array=GetIcArray.getIC_int(mongodb, segmentId, j, startTime, endTime);
 				
-				
-				array2=GetIcArray.getIC_int(mongodb, segmentId, j-1, startTime, endTime);
-				array3=GetIcArray.getIC_int(mongodb, segmentId, j+1, startTime, endTime);
 				tensor = toTrans_line(array, array2, array3, array4);
 				//out.println();
 				System.out.println(array);
+				System.out.println(array2);
+				System.out.println(arr.get(1));
+				System.out.println(array4);
 				}
 			}			
 		}
@@ -240,7 +244,8 @@ public class lineTransition {
 		String startTime = "2015-11-10 06:30:00";
 		String endTime = "2015-11-16 09:00:00" ;
 		//saveToFile_line(startTime, endTime);
-		sparse(startTime, endTime);
+		//sparse(startTime, endTime);
+		getTensor_3order();
 	}
 
 }

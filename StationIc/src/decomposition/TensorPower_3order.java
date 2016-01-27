@@ -1,10 +1,12 @@
 package decomposition;
 
 
+import transition.lineTransition;
 import transition.stationTransition;
+import transition.timeTransiTion;
 
 public class TensorPower_3order {
-	private static double p = 0.45;//p< 1/(order-1)
+	private static double p = 0.48;//p< 1/(order-1)
 	public static double [] power(double [][][] tensor,int n ){
 		double[] v = new double [n];
 		double [] rm = new double[n];
@@ -49,9 +51,9 @@ public class TensorPower_3order {
 		return v;
 	}
 	public static void main(String []args){
-		double [][][] tensor = stationTransition.getTensor_3order();
+		double [][][] tensor = lineTransition.getTensor_3order();
 		int n =20;
-		//Tensor_3order.print(tensor, n);
+		Tensor_3order.print(tensor, n);
 		double [] v=power(tensor, 20);
 		for(int i=0;i<20;i++){ 
 			System.out.print(v[i]+" ");

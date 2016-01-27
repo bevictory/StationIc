@@ -32,6 +32,7 @@ import mongodb.QueryBls;
   */
 public class hybridTransition {
 	private static  int matrixSize = 35;
+	private static  int stateSpace = 20;
 	private static MongoDatabase mongodb= MongoDBCoonnection.getInstance().getRemoteMongoDatabase2();
 	public static double[][][][][][][] getTranTensor_hybrid(String startTime, String endTime){
 		ArrayList<String> segment =new ArrayList<String>(); 
@@ -129,31 +130,32 @@ public class hybridTransition {
 		return arr;
 	}
 	public static double[][][][][] toTranMatrix_hybrid(ArrayList<ArrayList<Integer>> array){
-		double[][][][][] tranMatrix = new double[matrixSize][matrixSize][matrixSize][matrixSize][matrixSize];
+		double[][][][][] tranMatrix = new double[stateSpace][stateSpace][stateSpace][stateSpace][stateSpace];
 		
-		 double[][][][] sum = new double[matrixSize][matrixSize][matrixSize][matrixSize];
-		 int []len={} ;
+		 double[][][][] sum = new double[stateSpace][stateSpace][stateSpace][stateSpace];
+		 int []len=new int[6] ;
 		 
 		 for(int i=0;i<6;i++){
 			 len[i]=(array.get(i).size());
 		 }
 		 Arrays.sort(len);
 		 int length = len[0];
-		for(int i=1;i<length;i++){
+		for(int i=1;i<length-1;i++){
 			
 			sum[array.get(0).get(i-1)][(array.get(1).get(i)+array.get(2).get(i))/2][(array.get(3).get(i)+array.get(4).get(i)+array.get(5).get(i))/3][array.get(0).get(i)] += 1;
 			tranMatrix[array.get(0).get(i-1)][(array.get(1).get(i)+array.get(2).get(i))/2][(array.get(3).get(i)+array.get(4).get(i)+array.get(5).get(i))/3][array.get(0).get(i)][array.get(0).get(i+1)] +=1;
 		}
-		for (int i = 0; i < matrixSize; i++) {
-			for (int j = 0; j < matrixSize; j++) {
-				for (int k = 0; k < matrixSize; k++) {
-					for (int m = 0; m < matrixSize; m++) {
-						for (int n = 0; n < matrixSize; n++) {
+		for (int i = 0; i < stateSpace; i++) {
+			for (int j = 0; j < stateSpace; j++) {
+				for (int k = 0; k < stateSpace; k++) {
+					for (int m = 0; m < stateSpace; m++) {
+						for (int n = 0; n < stateSpace; n++) {
 							if (sum[i][j][k][m] > 0)
 								tranMatrix[i][j][k][m][n] /= sum[i][j][k][m];
 							// else tranMatrix[i][i] =1;
 							else {
-								tranMatrix[i][j][k][m][n] = 1.0 / (matrixSize * matrixSize);
+								//tranMatrix[i][j][k][m][n] = 1.0 / (matrixSize * matrixSize);
+								tranMatrix[i][j][k][m][m] = 2.0;
 							}
 						}
 					}
@@ -163,6 +165,116 @@ public class hybridTransition {
 			}
 		}
 		return tranMatrix;
+	}
+	public static double [][][][][] getTensor_5order(){
+		String startTime = "2015-11-10 06:30:00";
+		String endTime = "2015-11-12 09:00:00" ;
+		ArrayList<String> segment =new ArrayList<String>(); 
+		segment.add("35610028");segment.add("35557702");segment.add("35632502");segment.add("35641294");
+		//ArrayList<Integer> arr = new ArrayList<Integer>();
+		MongoDatabase mongodb= MongoDBCoonnection.getInstance().getRemoteMongoDatabase2();
+		int segmentId;int  stationNum;
+		
+		double [][][][][] tensor = new double[stateSpace][stateSpace][stateSpace][stateSpace][stateSpace];
+		for(int i=0;i<1;i++){
+			if(i<segment.size()){
+				
+				
+				
+				segmentId =Integer.valueOf(segment.get(i));
+				stationNum = QueryBls.getStationNum(mongodb,segmentId );
+				System.out.println("stationNum :" +stationNum);
+				int loc ;
+				if(stationNum <=35 ) 
+					loc =stationNum; 
+				else
+					loc =35;
+				for(int j=3;j<= 3;j++){
+					System.out.println("get arr");
+					if(j==1&&j<=loc-2){
+						System.out.println("get arr1");
+						ArrayList<Integer> array =null,array2 =null,array3 =null;
+						ArrayList<ArrayList<Integer>> arr= new ArrayList<ArrayList<Integer>>();
+						arr.add(GetIcArray.getIC_int(mongodb, segmentId, j, startTime, endTime));
+						
+						
+						//arr.add(GetIcArray.getIC_int(mongodb, segmentId, j, startTime, endTime));
+						arr.add(GetIcArray.getIC_int(mongodb, segmentId, j+1, startTime, endTime));
+						arr.add(GetIcArray.getIC_int(mongodb, segmentId, j+2, startTime, endTime));
+						for(int k=0;k<segment.size();k++){
+							if(k!=i) {
+								if(j <QueryBls.getStationNum(mongodb,Integer.valueOf(segment.get(k)) ))
+									arr.add(GetIcArray.getIC_int(mongodb,Integer.valueOf(segment.get(k)), j, startTime, endTime));
+								else 
+									arr.add(GetIcArray.getIC_int(mongodb,Integer.valueOf(segment.get(k)), QueryBls.getStationNum(mongodb,Integer.valueOf(segment.get(k)) ), startTime, endTime));
+							}
+						}
+						tensor=toTranMatrix_hybrid(arr);
+					}else if(j>1&&j<=loc-1){
+						ArrayList<ArrayList<Integer>> arr= new ArrayList<ArrayList<Integer>>();
+						arr.add(GetIcArray.getIC_int(mongodb, segmentId, j, startTime, endTime));
+						
+						
+						//arr.add(GetIcArray.getIC_int(mongodb, segmentId, j, startTime, endTime));
+						arr.add(GetIcArray.getIC_int(mongodb, segmentId, j-1, startTime, endTime));
+						arr.add(GetIcArray.getIC_int(mongodb, segmentId, j+1, startTime, endTime));
+						for(int k=0;k<segment.size();k++){
+							if(k!=i) {
+								if(j <QueryBls.getStationNum(mongodb,Integer.valueOf(segment.get(k)) ))
+									arr.add(GetIcArray.getIC_int(mongodb,Integer.valueOf(segment.get(k)), j, startTime, endTime));
+								else 
+									arr.add(GetIcArray.getIC_int(mongodb,Integer.valueOf(segment.get(k)), QueryBls.getStationNum(mongodb,Integer.valueOf(segment.get(k)) ), startTime, endTime));
+							}
+						}System.out.println("arr size : "+arr.size());
+						tensor=toTranMatrix_hybrid(arr);
+						
+					}else if (j == loc) {
+						ArrayList<ArrayList<Integer>> arr= new ArrayList<ArrayList<Integer>>();
+						arr.add(GetIcArray.getIC_int(mongodb, segmentId, j, startTime, endTime));
+						
+						
+						//arr.add(GetIcArray.getIC_int(mongodb, segmentId, j, startTime, endTime));
+						arr.add(GetIcArray.getIC_int(mongodb, segmentId, j-2, startTime, endTime));
+						arr.add(GetIcArray.getIC_int(mongodb, segmentId, j-1, startTime, endTime));
+						for(int k=0;k<segment.size();k++){
+							if(k!=i) {
+								if(j <QueryBls.getStationNum(mongodb,Integer.valueOf(segment.get(k)) ))
+									arr.add(GetIcArray.getIC_int(mongodb,Integer.valueOf(segment.get(k)), j, startTime, endTime));
+								else 
+									arr.add(GetIcArray.getIC_int(mongodb,Integer.valueOf(segment.get(k)), QueryBls.getStationNum(mongodb,Integer.valueOf(segment.get(k)) ), startTime, endTime));
+							}
+						}
+						tensor=toTranMatrix_hybrid(arr);
+					}else {
+						
+					}
+					
+					
+					
+				}
+				
+				
+					
+					
+				}
+				
+			}
+		
+		
+		return tensor;
+	}
+	public static double[][][][] avMatrix_hybrid() {
+		double[][][][] arr = new double[stateSpace][stateSpace][stateSpace][stateSpace];
+		for (int i = 0; i < stateSpace; i++) {
+			for (int j = 0; j < stateSpace; j++) {
+				for (int k = 0; k < stateSpace; k++) {
+					for (int m = 0; m < stateSpace; m++) {
+					arr[i][j][k][m] = 1.0 /( stateSpace);
+					}
+				}
+			}
+		}
+		return arr;
 	}
 	public static void saveToFile_hybrid(String startTime, String endTime){
 		double [][][][][][][] tensor = getTranTensor_hybrid(startTime, endTime);

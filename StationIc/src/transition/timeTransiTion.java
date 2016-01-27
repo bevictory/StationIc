@@ -91,7 +91,8 @@ public class timeTransiTion {
 						trans[i][j][k] /= sum[i][j];
 					// else tranMatrix[i][i] =1;
 					else {
-						trans[i][j][k] = 1.0 / ( stateSpace);
+						//trans[i][j][k] = 1.0 / ( stateSpace);
+						trans[i][j][j] =2.0;
 					}
 				}
 
