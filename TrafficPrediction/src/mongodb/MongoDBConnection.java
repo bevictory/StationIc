@@ -3,6 +3,7 @@ package mongodb;
 import java.io.IOException;
 import java.util.Properties;
 
+import com.mongodb.DB;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 
@@ -12,6 +13,11 @@ public class MongoDBConnection {
 	private String configFileName = "mongodb.properties";
 	private String url;
 	private MongoClient mongoClient;
+	
+	public DB getDB(String databaseName){
+		DB db = mongoClient.getDB(databaseName);
+		return db;
+	}
 	/**
 	 * build 
 	 */

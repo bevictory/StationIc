@@ -109,6 +109,17 @@ public class Time {
 		}
 		return str;
 	}
+	public static String addHalfHours(String time,int num){
+		SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String str = "";
+		try {
+			str = formater.format(new Date(formater.parse(time).getTime()+num*30*60*1000));
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return str;
+	}
 	public static String add(String time,int num){
 		SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		String str = "";
@@ -136,6 +147,19 @@ public class Time {
 		int num =0;
 		try {
 			 num = (int)(formater.parse(endTime).getTime()-formater.parse(startTime ).getTime())/60/60/1000;
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if(num >=0) return num;
+		
+		else return -1;
+	}
+	public static int disHalfHours(String startTime, String endTime){
+		SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		int num =0;
+		try {
+			 num = (int)(formater.parse(endTime).getTime()-formater.parse(startTime ).getTime())/30/60/1000;
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

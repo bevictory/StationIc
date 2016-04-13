@@ -84,21 +84,89 @@ public class GetIcArray {
 				start = Time.addHours(start, 24);
 				end = Time.addHours(end, 24);
 			}
-			System.out.println(start);
-			System.out.println(end);
+			//System.out.println(start);
+			//System.out.println(end);
 			getIcAsArray_int(segmentId, sngSerialId, start, end, arr);
 
 		}
 		return arr;
 	}
-
+	public static int getIcByHour(int segmentId, int sngSerialId, String startTime, String endTime){
+		ArrayList<Integer> arr = new ArrayList<Integer>();
+		
+		
+		
+		getIcAsArray_int(segmentId, sngSerialId, startTime, endTime, arr);
+		int sum=0;
+		for(Integer s :arr){
+			sum+=s;
+		}
+		return sum;
+	}
+	public static ArrayList<Integer> getIcByHour_int(int segmentId, int sngSerialId, String startTime, String endTime){
+		ArrayList<Integer> arr = new ArrayList<Integer>();
+		String start = startTime, end;
+		StringTokenizer str = new StringTokenizer(endTime, " ");
+		str.nextToken();
+		end = new StringTokenizer(startTime, " ").nextToken() + " "
+				+ str.nextToken();
+		int num  = Time.disHalfHours(start, end);
+		int numDays = Time.disDays(startTime, endTime)+1;
+		end = Time.addHalfHours(start, 1);
+		arr.add(getIcByHour(segmentId, sngSerialId, start, end));
+		
+		//System.out.println(num);
+		for(int i=1;i<num*numDays;i++){
+			
+			if(i%num !=0){
+				start = Time.addHalfHours(start, 1);
+				end = Time.addHalfHours(end, 1);
+				arr.add(getIcByHour(segmentId, sngSerialId, start, end));
+			}else {
+				start = Time.addDay(start, 1);
+				end = Time.addHalfHours(start, 1);
+				arr.add(getIcByHour(segmentId, sngSerialId, start, end));
+			}
+			
+		}
+		return arr;
+	}
 	public static void main(String[] args) {
 		int segmentId = 35610028;
-		int sngSerialId = 3;
-		String startTime = "2015-12-11 08:40:00", endTime = "2015-12-10 09:00:00";
-		System.out.println(getIC_int(
+		int sngSerialId = 2;
+		String startTime = "2015-12-07 06:30:00", endTime = "2015-12-11 09:00:00";
+		for(int i  =2 ; i <= 2; i++){
+			sngSerialId = i;
+			System.out.println(getIC_int(
 				segmentId, sngSerialId, startTime, endTime));
-		System.out.println(getIcAtTime(segmentId, sngSerialId, startTime));
+		}
+		ArrayList<Integer> arr = new ArrayList<Integer>();
+		String start = startTime, end;
+		StringTokenizer str = new StringTokenizer(endTime, " ");
+		str.nextToken();
+		end = new StringTokenizer(startTime, " ").nextToken() + " "
+				+ str.nextToken();
+		int num  = Time.disHalfHours(start, end);
+		int numDays = Time.disDays(startTime, endTime)+1;
+		end = Time.addHalfHours(start, 1);
+		arr.add(getIcByHour(segmentId, sngSerialId, start, end)/3);
+		
+		System.out.println(num);
+		for(int i=1;i<num*numDays;i++){
+			
+			if(i%num !=0){
+				start = Time.addHalfHours(start, 1);
+				end = Time.addHalfHours(end, 1);
+				arr.add(getIcByHour(segmentId, sngSerialId, start, end)/3);
+			}else {
+				start = Time.addDay(start, 1);
+				end = Time.addHalfHours(start, 1);
+				arr.add(getIcByHour(segmentId, sngSerialId, start, end)/3);
+			}
+			
+		}
+		System.out.println(arr);
+		//System.out.println(getIcAtTime(segmentId, sngSerialId, startTime));
 	}
 
 }

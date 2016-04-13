@@ -17,15 +17,15 @@ public class StationTransition extends Transition {
 	public StationTransition(){
 		array_relate = new ArrayList<ArrayList<Integer>>();
 		para = new ArrayList<Double>();
-		transTensor = new double[stateSpace][stateSpace][stateSpace];
+		transTensor = new double[stateSpace][stateSpace][stateSpace];set_para();
 	}
 	public double[][][] getTransiton( int segmentId, int sngSerialId, String startTime, String endTime){
 		if(!isSetTrans){
 			ArrayList<Integer> array = GetIcArray.getIC_int( segmentId, sngSerialId, startTime, endTime);
 			set_arrayRelate(segmentId, sngSerialId, startTime, endTime);
-			set_para();
-			toTransTensor(array);
 			
+			toTransTensor(array);
+			isSetTrans = true;
 		}
 		return transTensor;
 	}

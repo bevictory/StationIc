@@ -16,5 +16,34 @@ public class Tensor_4order {
 		
 		return tensor_3order;
 	}
+	public static double[][] multip_2order(double[][][][] tensor_4order, double [][] matrix, int cluster_num,int stateSpace){
+		double [][]result = new double[cluster_num][stateSpace];
+		for(int i= 0; i < cluster_num; i++){
+			for(int j =0; j < stateSpace; j++){
+				for(int k =0; k < cluster_num; k++){
+					for(int m =0;m<stateSpace ; m++){
+						result[i][j] += tensor_4order[i][j][k][m]*matrix[k][m];
+					}
+				}
+					
+			}
+		}
+		return result;
+	}
+	public static double[][] multip_2order_formulti(double[][][][] tensor_4order, double [][] matrix, int cluster_num,int stateSpace){
+		double [][]result = new double[cluster_num][stateSpace];
+		for(int i= 0; i < cluster_num; i++){
+			for(int j =0; j < stateSpace; j++){
+				
+				for(int k =0; k < cluster_num; k++){
+					for(int m =0;m<stateSpace ; m++){//Matrix.print(tensor_4order[i][k], stateSpace);
+						result[i][j] += tensor_4order[k][i][m][j]*matrix[k][m];
+					}
+				}
+					
+			}
+		}
+		return result;
+	}
 
 }
