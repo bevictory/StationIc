@@ -2,7 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
-	<classpathentry kind="lib" path="E:/workspace_eclipse/StationIc/mongo-java-driver-3.0.4.jar"/>
+	<classpathentry kind="lib" path="E:/workspace_eclipse/StationIc/mongo-java-driver-3.0.4.jar" sourcepath="C:/Users/Administrator/.m2/repository/org/mongodb/mongo-java-driver/3.0.4/mongo-java-driver-3.0.4-sources.jar"/>
 	<classpathentry kind="lib" path="E:/workspace_eclipse/StationIc/mysql-connector-java-5.0.6-bin.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -171,10 +171,20 @@ public class QueryBls {
 		ArrayList<BasicDBObject> lis = (ArrayList<BasicDBObject>)doc.get("station");
 		return lis.get(0).getString("stationId");	
 	}
-	public static void main(String[] args){
-		ArrayList<tuple> array= getSameStation(MongoDBCoonnection.getInstance().getDB(),1766503,1);
-		System.out.println(array);
+	public static int getSubInfoId(MongoDatabase mongodb,int segmentId){
+		MongoCollection<Document> collection = mongodb.getCollection(collectionName);
+		ArrayList<Document> list = new ArrayList<Document>();
+		list.add(new Document("lineId",Integer.valueOf(segmentId)));
 		
+		FindIterable<Document> iter =collection.find(new Document("$and",list));
+		if(iter.iterator().hasNext()) return iter.iterator().next().getInteger("subRouteInfoId");
+		else return 0;
+	}
+	public static void main(String[] args){
+//		ArrayList<tuple> array= getSameStation(MongoDBCoonnection.getInstance().getDB(),1766503,1);
+//		System.out.println(array);
+		String s= String.format("%06d", 46);
+		System.out.println( s);
 		//System.out.println(getStationNum(MongoDBCoonnection.getInstance().getMongoData(),35557702));
 		//System.out.println(getStationId(MongoDBCoonnection.getInstance().getDB(),35557702,2));
 	}
