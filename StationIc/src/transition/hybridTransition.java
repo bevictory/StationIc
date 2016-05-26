@@ -154,7 +154,7 @@ public class hybridTransition {
 								tranMatrix[i][j][k][m][n] /= sum[i][j][k][m];
 							// else tranMatrix[i][i] =1;
 							else {
-								//tranMatrix[i][j][k][m][n] = 1.0 / (matrixSize * matrixSize);
+								//tranMatrix[i][j][k][m][n] = 1.0 / (stateSpace );
 								tranMatrix[i][j][k][m][m] = 2.0;
 							}
 						}

@@ -32,7 +32,7 @@ import mongodb.QueryBls;
 public class timeTransiTion {
 	private static int lineNum =4;
 	private static int station = 35;
-	private static  int stateSpace = 35;
+	private static  int stateSpace = 20;
 	private static MongoDatabase mongodb= MongoDBCoonnection.getInstance().getRemoteMongoDatabase2();
 	public static double[][][][][] getTranTensor_time(String startTime, String endTime){
 		ArrayList<String> segment =new ArrayList<String>(); 
@@ -92,7 +92,7 @@ public class timeTransiTion {
 					// else tranMatrix[i][i] =1;
 					else {
 						//trans[i][j][k] = 1.0 / ( stateSpace);
-						trans[i][j][j] =2.0;
+						trans[i][j][j] =1.0;
 					}
 				}
 

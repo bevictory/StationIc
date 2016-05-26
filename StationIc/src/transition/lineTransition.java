@@ -34,7 +34,7 @@ import mongodb.QueryBls;
 public class lineTransition {
 	private static int lineNum =4;
 	private static int station = 35;
-	private static  int stateSpace = 35;
+	private static  int stateSpace = 20;
 	private static MongoDatabase mongodb= MongoDBCoonnection.getInstance().getRemoteMongoDatabase2();
 	public static double[][][][][] getTranTensor_line(String startTime, String endTime){
 		ArrayList<String> segment =new ArrayList<String>(); 

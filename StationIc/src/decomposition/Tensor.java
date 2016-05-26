@@ -36,6 +36,20 @@ public class Tensor {
 	public static double[][][][] multip_order(double [][][][][] tensor, double [] v ,double [] rm, int n){
 		
 		double [][][][] tensor_4  =new double[n][n][n][n];
+//		for(int i = 0; i < 3; i++){
+//			for(int j = 0; j<3; j++){
+//				for(int k =0; k < 3; k++){
+//					for(int l =0;l<n ; l++){
+//						System.out.println(l+" "+i+" "+j+" "+k);
+//						for(int m=0; m < n ; m++){
+//							System.out.print(tensor[l][i][j][k][m]+" ");
+//						}
+//						System.out.println();
+//					}
+//				}
+//			}
+//		}
+		System.out.println("multip order 5");
 		for(int i = 0; i < n; i++){
 			for(int j = 0; j<n; j++){
 				for(int k =0; k < n; k++){
@@ -48,16 +62,17 @@ public class Tensor {
 				}
 			}
 		}
-		for(int i = 0; i < n; i++){
-			for(int j = 0; j<n; j++){
-				for(int k =0; k < n; k++){
-					for(int m =0;m<n ; m++){
-						System.out.print(tensor_4[k][i][j][m]+" ");
-					}
-					System.out.println();
-				}
-			}
-		}
+//		for(int i = 0; i < 3; i++){
+//			for(int j = 0; j<3; j++){
+//				for(int k =0; k < n; k++){
+//					System.out.println(k+" "+i+" "+j);
+//					for(int m =0;m<n ; m++){
+//						System.out.print(tensor_4[k][i][j][m]+" ");
+//					}
+//					System.out.println();
+//				}
+//			}
+//		}
 		return tensor_4;
 	}
 	public static double[][][][][] multip_order(double [][][][][][] tensor, double [] v ,double [] rm, int n){

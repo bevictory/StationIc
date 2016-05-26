@@ -242,9 +242,10 @@ public class CheckTime {
 	}
 
 	public static void main(String[] args) {
-		String startTime = "2015-11-11 00:00:00";
-		String endTime = "2015-11-12 00:00:00";
-		check(startTime, endTime);
+		String startTime = "2015-11-11 08:00:00";
+		String endTime = "2015-11-11 09:00:00";
+//		check(startTime, endTime);
+		System.out.println(getIcAsArray("038704", startTime, endTime));
 	}
 
 }

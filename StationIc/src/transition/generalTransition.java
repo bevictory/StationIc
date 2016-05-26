@@ -34,7 +34,7 @@ import mongodb.QueryBls;
   */
 public class generalTransition {
 	private static int station = 35;
-	private static  int stateSpace = 35;
+	private static  int stateSpace = 20;
 	
 	private static MongoDatabase mongodb= MongoDBCoonnection.getInstance().getRemoteMongoDatabase2();
 	public static double[][][][] getTranTensor(String startTime, String endTime){
@@ -111,7 +111,8 @@ public class generalTransition {
 				if(sum[i] > 0)tranMatrix[i][j] /= sum[i]; 
 				//else tranMatrix[i][i] =1;
 				else {					
-						tranMatrix[i][j] =1.0/stateSpace;					
+						//tranMatrix[i][j] =1.0/stateSpace;
+					//tranMatrix[i][j] = 1.0;
 				}
 			}
 		}

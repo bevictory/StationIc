@@ -44,7 +44,8 @@ public class DealVector {
 	}
 	public static void print(double [] v, int n){
 		for(int i=0;i<n;i++){ 
-			System.out.print(v[i]+" ");
+			System.out.printf("%.6f",v[i]);
+			System.out.println();
 		}
 		System.out.println();
 	}

@@ -243,6 +243,34 @@ public class Time {
 		
 		else return -1;
 	}
+	public static int getInterBtwIc(Document doc1,Document doc2){
+		SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		
+		int dis =0;
+		try {
+			 dis = (int)(formater.parse(doc2.getString("xfsj")).getTime()-formater.parse(doc1.getString("xfsj") ).getTime())/1000;			 
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if(dis >=0) return dis;
+		
+		else return -1;
+	}
+	public static int getInterBtwTime(String time1,String time2){
+		SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		
+		int dis =0;
+		try {
+			 dis = (int)(formater.parse(time2).getTime()-formater.parse(time1 ).getTime())/1000;			 
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if(dis >=0) return dis;
+		
+		else return -1;
+	}
 	public static int getInterDoc(String doc1,String doc2){
 		SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		

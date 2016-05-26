@@ -33,7 +33,7 @@ public class TensorPower_3order {
 		System.out.println("tensor deal:");
 		Tensor_3order.deal(tensor, n, rm2, rmNum, p);
 		Tensor_3order.print(tensor, n);
-		double lamda =1e-10;
+		double lamda =1e-8;
 		double [] z =new double[n];
 		v=DealVector.init(rm, n, rmNum);
 		DealVector.print(v, n);
@@ -43,8 +43,8 @@ public class TensorPower_3order {
 			v=Tensor_3order.multip_order(tensor, v,rm, n);
 			ite++;
 			System.out.println("the ite num: "+ite);
-			DealVector.print(v, n);
-			if(ite >100) {
+			//DealVector.print(v, n);
+			if(ite >50) {
 				break;
 			}
 		}
@@ -53,11 +53,9 @@ public class TensorPower_3order {
 	public static void main(String []args){
 		double [][][] tensor = lineTransition.getTensor_3order();
 		int n =20;
-		Tensor_3order.print(tensor, n);
+		//Tensor_3order.print(tensor, n);
 		double [] v=power(tensor, 20);
-		for(int i=0;i<20;i++){ 
-			System.out.print(v[i]+" ");
-		}
+		DealVector.print(v, n);
 	}
 
 }

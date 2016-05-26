@@ -4,7 +4,7 @@ import transition.hybridTransition;
 import transition.lineTransition;
 
 public class TensorPower_6order {
-	private static double p = 0.2;//p< 1/(order-1)
+	private static double p = 0.24;//p< 1/(order-1)
 	public static double [] power(double [][][][][] tensor,int n ){
 		double[] v = new double [n];
 		double [] rm = new double[n];
@@ -55,8 +55,22 @@ public class TensorPower_6order {
 		System.out.println("rm vector:");
 		for(int i=0;i<n;i++) System.out.print(rm[i]+" ");
 		System.out.println();
+
 		System.out.println("tensor deal:");
-		Tensor.deal(tensor_5, n, rm, rm4, rmNum, p);
+		Tensor.deal(tensor, n, rm, rm4, rmNum, p);
+		for(int i = 0; i < 3; i++){
+			for(int j = 0; j<3; j++){
+				for(int k =0; k < 3; k++){
+					for(int l =0;l<n ; l++){
+						System.out.println(l+" "+i+" "+j+" "+k);
+						for(int m=0; m < n ; m++){
+							System.out.print(tensor[l][i][j][k][m]+" ");
+						}
+						System.out.println();
+					}
+				}
+			}
+		}
 		double lamda =1e-10;
 		double [] z =new double[n];
 		v=DealVector.init(rm, n, rmNum);
@@ -64,11 +78,11 @@ public class TensorPower_6order {
 		int ite=0;
 		while(DealVector.norm_2(v, z, n)>lamda){
 			DealVector.copy(z, v, n);
-			for(int i=1 ;i < 2; i ++){
+			for(int i=1 ;i < 5; i ++){
 				if(i==0){
 					//tensor_5 = Tensor.multip_order(tensor, v, rm, rmNum);
 				}else if(i == 1){
-					tensor_4 = Tensor.multip_order(tensor_5, v, rm, n);
+					tensor_4 = Tensor.multip_order(tensor, v, rm, n);
 				}else if(i == 2){
 					tensor_3 = Tensor.multip_order(tensor_4, v, rm, n);
 					
@@ -92,9 +106,7 @@ public class TensorPower_6order {
 		int n =20;
 		//Tensor_3order.print(tensor, n);
 		double [] v=power(tensor, 20);
-		for(int i=0;i<20;i++){ 
-			System.out.print(v[i]+" ");
-		}
+		DealVector.print(v, n);
 	}
 
 }

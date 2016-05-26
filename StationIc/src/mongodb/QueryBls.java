@@ -10,8 +10,11 @@
 package mongodb;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import org.bson.Document;
+
+import util.tuple;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
@@ -28,6 +31,7 @@ import com.mongodb.client.MongoDatabase;
   * @see	[相关类/方法]
   * @since	[产品/模块版本]
   */
+
 public class QueryBls {
 	private static String collectionName ="BusLineStation";
 	public static int getSegmentId(MongoDatabase mongodb,String subRouteId,String runDirection){
@@ -55,6 +59,34 @@ public class QueryBls {
 		
 		array.add(doc.getInteger("lineId"));
 		array.add(doc.getInteger("runDirection"));
+		return array;
+	}
+	public static ArrayList<tuple> getSameStation(DB mongodb , int lineId, int sngSerialId){
+		ArrayList<tuple> array = new ArrayList<tuple>();
+		ArrayList<BasicDBObject> list = new ArrayList<BasicDBObject>();
+		list.add(new BasicDBObject("lineId",lineId));
+		list.add(new BasicDBObject("station.sngSerialId",sngSerialId));
+		DBCursor cursor =mongodb.getCollection(collectionName).find(new BasicDBObject("$and",list),new BasicDBObject("lineId",1).append("station.$",1));
+		BasicDBObject doc = null;
+		if(cursor.iterator().hasNext()) doc=(BasicDBObject) cursor.iterator().next();
+		@SuppressWarnings("unchecked")
+		ArrayList<BasicDBObject> lis = (ArrayList<BasicDBObject>)doc.get("station");
+		
+		String stationId=lis.get(0).getString("stationId");
+		
+		list.clear();
+
+		list.add(new BasicDBObject("station.stationId",stationId));
+		cursor =mongodb.getCollection(collectionName).find(new BasicDBObject("$and",list),new BasicDBObject("lineId",1).append("station.$",1));
+		Iterator<DBObject> ite = cursor.iterator();
+		
+		while(ite.hasNext()){
+			doc = (BasicDBObject) ite.next();
+			@SuppressWarnings("unchecked")
+			ArrayList<BasicDBObject> l = (ArrayList<BasicDBObject>)doc.get("station");
+			tuple t = new tuple(doc.getInt("lineId"),l.get(0).getInt("sngSerialId"));
+			array.add(t);
+		}
 		return array;
 	}
 	public static ArrayList<String> getSgSd(DB mongodb,String subRouteId,String dualserialid){
@@ -140,9 +172,9 @@ public class QueryBls {
 		return lis.get(0).getString("stationId");	
 	}
 	public static void main(String[] args){
-		ArrayList<String> array= getSgSd(MongoDBCoonnection.getInstance().getDB(),"95","5");
-		System.out.println(array.get(1));
-		System.out.println(array.get(2));
+		ArrayList<tuple> array= getSameStation(MongoDBCoonnection.getInstance().getDB(),1766503,1);
+		System.out.println(array);
+		
 		//System.out.println(getStationNum(MongoDBCoonnection.getInstance().getMongoData(),35557702));
 		//System.out.println(getStationId(MongoDBCoonnection.getInstance().getDB(),35557702,2));
 	}

@@ -34,7 +34,7 @@ import util.Time;
   * @since	[产品/模块版本]
   */
 public class GetIcArray {
-	private static String collectionName = "gps_11_10_IC";
+	private static String collectionName = "gps_12_07_IC";
 	private static  int stateSpace = 20;
 	public static void getIcAsArray(MongoDatabase mongodb,int segmentId, int sngSerialId,
 		String startTime, String endTime,final ArrayList<Document> array){
@@ -133,16 +133,16 @@ public class GetIcArray {
 				//else tranMatrix[i][i] =1;
 				else {					
 						//tranMatrix[i][i] =1.0/stateSpace;	
-					tranMatrix[i][j] =1.0/stateSpace;	
+					tranMatrix[i][i] =0.0;	
 				}
 			}
 		}
 		return tranMatrix;
 	}
 	public static double [][] getTransmatrix(){
-		setCollectionName("gps_11_10_IC");
-		String startTime = "2015-11-10 06:30:00";
-		String endTime = "2015-11-12 09:00:00" ;
+		setCollectionName("gps_12_07_IC");
+		String startTime = "2015-12-07 06:30:00";
+		String endTime = "2015-12-11 09:00:00" ;
 		ArrayList<String> segment =new ArrayList<String>(); 
 		segment.add("35610028");segment.add("35557702");segment.add("35632502");segment.add("35641294");
 		ArrayList<Integer> arr = new ArrayList<Integer>();
@@ -165,9 +165,10 @@ public class GetIcArray {
 		return matrix;
 	}
 	public static void main(String [] args){
-		setCollectionName("gps_11_10_IC");
-		String startTime = "2015-11-10 06:30:00";
-		String endTime = "2015-11-12 09:00:00" ;
+		//getTransmatrix();
+		setCollectionName("gps_12_07_IC");
+		String startTime = "2015-12-07 06:30:00";
+		String endTime = "2015-12-11 09:00:00" ;
 		ArrayList<String> segment =new ArrayList<String>(); 
 		segment.add("35610028");segment.add("35557702");segment.add("35632502");segment.add("35641294");
 		ArrayList<Integer> arr = new ArrayList<Integer>();
@@ -181,19 +182,22 @@ public class GetIcArray {
 			e.printStackTrace();
 		}
 		int segmentId;
-		for(int i=0;i<4;i++){
+		for(int i=0;i<1;i++){
 			if(i<segment.size()){
 				segmentId =Integer.valueOf(segment.get(i));
-				for(int j =3;j<=5;j++){
+				for(int j =3;j<=3;j++){
 				ArrayList<Integer> array =null;
 				array=GetIcArray.getIC_int(mongodb, segmentId, j, startTime, endTime);
-				double [][]matrix = new double[stateSpace][stateSpace];
-				matrix = toTranMatrix(array);
-				for(int k=0;k<stateSpace;k++){
-					for(int m=0;m<stateSpace;m++){
-						out.print(matrix[k][m]+" ");
-					}
-					out.println();
+//				double [][]matrix = new double[stateSpace][stateSpace];
+//				matrix = toTranMatrix(array);
+//				for(int k=0;k<stateSpace;k++){
+//					for(int m=0;m<stateSpace;m++){
+//						out.print(matrix[k][m]+" ");
+//					}
+//					out.println();
+//				}
+				for(int k = 0; k < array.size(); k ++) {
+					out.print(array.get(k)+" ");
 				}
 				//out.println();
 				System.out.println(array);

@@ -71,9 +71,10 @@ public class GeneralPower {
 			}
 			System.out.println();
 		}
-		double [] v=decomp_nodel(matrix,20);
+		double [] v=decomp(matrix,20);
 		for(int i=0;i<20;i++){ 
-			System.out.print(v[i]+" ");
+			System.out.printf("%.6f",v[i]);
+			System.out.println();
 		}
 	}
 
