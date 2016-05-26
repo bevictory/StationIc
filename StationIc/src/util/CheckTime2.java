@@ -557,6 +557,21 @@ public class CheckTime2 {
 		if(array.size() >0) return array.get(0).getInteger("inter");
 		else return 0;
 	}
+	
+	public static double isCheckTime(String qcbh){
+		final ArrayList<Document> array = new ArrayList<Document>();
+		FindIterable<Document> iter = mongodb.getCollection("checkTime").find(new Document("busselfId", qcbh));
+		iter.forEach(new Block<Document>() {
+
+			@Override
+			public void apply(Document arg0) {
+				// TODO Auto-generated method stub
+				array.add(arg0);
+			}
+		});
+		if(array.size() >0) return array.get(0).getDouble("prob");
+		else return -1;
+	}
 	public static void main(String[] args) {
 		String startTime = "2015-11-11 00:00:00";
 		String endTime = "2015-11-11 23:59:59";

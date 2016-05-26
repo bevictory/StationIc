@@ -7,9 +7,11 @@ import java.util.List;
 import java.util.Map;
 
 import javax.management.Query;
+import javax.print.Doc;
 
 import mongodb.MongoDBCoonnection;
 import mongodb.QueryBls;
+import mongodb.UpdateTraffic;
 
 import org.bson.Document;
 
@@ -18,8 +20,9 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoDatabase;
 
 public class GpsIcIntegrate {
-	private static String gps_collection ="gps_11_10_IC";
-	private static String ic_collection ="icData";
+	private static String gps_collection = "gps_11_10_IC";
+	private static String ic_collection = "icData";
+
 	private static MongoDatabase mongodb = MongoDBCoonnection.getInstance()
 			.getMongoData();
 
@@ -73,6 +76,12 @@ public class GpsIcIntegrate {
 	 */
 	public static List<Document> getIc(String xlbh, String qcbh,
 			String startTime, String endTime) {
+		if(hasChecked(qcbh))
+		{
+			int inter =  CheckTime2.get_inter(qcbh);
+			startTime  = Time.add(startTime,inter);
+			endTime  = Time.add(endTime, inter);
+		}
 		final ArrayList<Document> array = new ArrayList<Document>();
 		FindIterable<Document> iter = mongodb
 				.getCollection(ic_collection)
@@ -91,23 +100,31 @@ public class GpsIcIntegrate {
 		});
 		return array;
 	}
+
 	/**
 	 * 获得车辆发车前的刷卡人数
+	 * 
 	 * @param segmentId
 	 * @param busselfId
 	 * @param time
 	 * @param flag
 	 * @return
 	 */
-	public static int  getDepartIcNum(int segmentId, String busselfId,String time, int flag){
+	public static int getDepartIcNum(int segmentId, String busselfId,
+			String time, int flag) {
 		final ArrayList<Document> array = new ArrayList<Document>();
-		Document document =null;
-		if(flag==1) document= new Document("leaveTime",new Document("$lte", time));
-		else document= new Document("leaveTime",new Document("$gte", time));
+		Document document = null;
+		if (flag == 1)
+			document = new Document("leaveTime", new Document("$lte", time));
+		else
+			document = new Document("arriveTime", new Document("$gte", time));
+
+		// time= Time.addTime(time,-CheckTime2.get_inter("0"+busselfId));
+
 		FindIterable<Document> iter = mongodb
 				.getCollection(gps_collection)
-				.find(new Document("$and", Arrays.asList( new Document("busselfId",
-						busselfId), document)))
+				.find(new Document("$and", Arrays.asList(new Document(
+						"busselfId", busselfId), document)))
 				.sort(new Document("arriveTime", -1)).limit(1);
 		iter.forEach(new Block<Document>() {
 
@@ -117,30 +134,50 @@ public class GpsIcIntegrate {
 				array.add(arg0);
 			}
 		});
-		if(array.size()==0) return 0;
+		if (array.size() == 0)
+			return 0;
 		document = array.get(0);
 		String startTime = document.getString("leaveTime");
-		System.out.println("StartTime "+startTime);
-		String xlbh= String.format("%06d", QueryBls.getSubInfoId(mongodb, segmentId));
-		System.out.println("xlbh "+xlbh);
-		List<Document> ic = getIc(xlbh, "0"+busselfId, startTime, time);
-		System.out.println("ic num " +ic.size());
-		int num =0;
-		if(document.getInteger("sngSerialId") == QueryBls.getStationNum(mongodb, document.getInteger("segmentId"))){
-		
-		return ic.size();
+
+		System.out.println("StartTime " + startTime);
+
+		String xlbh = String.format("%06d",
+				QueryBls.getSubInfoId(mongodb, segmentId));
+
+		System.out.println("xlbh " + xlbh);
+
+		if (Math.abs(CheckTime2.isCheckTime("0" + busselfId) - 1) < 10e-5) {
+			int gps_ic_inter = -CheckTime2.get_inter("0" + busselfId);
+			startTime = Time.add(startTime, gps_ic_inter);
+			time = Time.add(time, gps_ic_inter);
+
 		}
-		else{
-			for(int i =0 ;i < ic.size(); i++){
-				if(Math.abs(Time.getInterBtwTime(ic.get(i).getString("xfsj"), time))
-						< Math.abs(Time.getInterBtwTime(ic.get(i).getString("xfsj"), document.getString("leaveTime")))) 
+
+		List<Document> ic = getIc(xlbh, "0" + busselfId, startTime, time);
+
+		System.out.println("ic num " + ic.size());
+
+		int num = 0;
+		if (document.getInteger("sngSerialId") == QueryBls.getStationNum(
+				mongodb, document.getInteger("segmentId"))) {
+
+			return ic.size();
+		} else {
+			for (int i = 0; i < ic.size(); i++) {
+				if (Math.abs(Time.getInterBtwTime(ic.get(i).getString("xfsj"),
+						time)) < Math.abs(Time.getInterBtwTime(ic.get(i)
+						.getString("xfsj"), startTime)))
 					num++;
 			}
 			return num;
 		}
-		
-	}
 
+	}
+	public static boolean hasChecked(String qcbh){
+		if (Math.abs(CheckTime2.isCheckTime(qcbh) - 1) < 10e-5) {
+			return true;
+		}else  return false;
+	}
 	/**
 	 * 获得Ic卡数据之间时间间隔数组
 	 * 
@@ -184,29 +221,66 @@ public class GpsIcIntegrate {
 		}
 		return arr;
 	}
-
-	
-	
-	
+	public static void integrateWithInter(List<Document> gpsList,
+			List<Document> icList, int segmentId, String busselfId,int inter){
+		
+		Map<Integer, Integer> result = new HashMap<Integer, Integer>();
+		for(int i =0;i< icList.size() ;i++){
+			Document document  = icList.get(i);
+			String xfsj=Time.add(document.getString("xfsj"),inter);
+			int min = Integer.MAX_VALUE;
+			int locj=0;
+			for(int j=0;j<gpsList.size();j++){
+				int dis = Math.min(Math.abs(Time.getInterBtwTime(gpsList.get(i).getString("leaveTime"), xfsj)),
+						Math.abs(Time.getInterBtwTime(gpsList.get(i).getString("arrivTime"), xfsj)));
+				if(dis<min){
+					locj =j;
+				}
+			}result.put(locj+1,result.get(locj+1)==null?1:result.get(locj+1)+1);
+		}
+		
+		for (int i = 0; i < gpsList.size(); i++) {
+			if (result.containsKey(i + 1)) {
+				UpdateTraffic.update(MongoDBCoonnection.getMongoDBConn()
+						.getDB(), gps_collection,
+						gpsList.get(i).getObjectId("_id"), result.get(i + 1));
+			}
+		}
+	}
 	/**
 	 * 获得刷卡数据与gps数据匹配最小间隔的方案
 	 * 
-	 * @param gpsInter
-	 * @param icInter
+	 * @param gpsList
+	 * @param icList
 	 * @return
 	 */
-	public static int minInterBteGpsIc(List<Integer> gpsInter,
-			List<Integer> icInter) {
-		//保存时间间隔
+	public static int minInterBteGpsIc(List<Document> gpsList,
+			List<Document> icList, int segmentId, String busselfId) {
+		List<Integer> gpsInter = null, icInter = null;
+
+		// 获得gps数据 时间间隔
+		gpsInter = gpsInter(gpsList);
+
+		// 获得ic数据 时间间隔
+		icInter = icInter(icList);
+
+		// 保存时间间隔
 		int inter = 0;
-		//保存最小时间间隔
-		int min = Integer.MAX_VALUE; 
-		//loc 最小时间间隔的匹配开始位置 time 最小时间错位
+
+		// 保存最小时间间隔
+		int min = Integer.MAX_VALUE;
+
+		// loc 最小时间间隔的匹配开始位置 time 最小时间错位
 		int loc = 0, time = 0;
-		//timeInter 保存时间错位
+
+		// timeInter 保存时间错位
 		int timeInter = 0;
-		//result 保存最小间隔匹配方案
+
+		// result 保存最小间隔匹配方案
 		Map<Integer, Integer> result = null;
+		String departTime = gpsList.get(0).getString("arriveTime");
+		int beforeDepartIcNum = getDepartIcNum(segmentId, busselfId,
+				departTime, 1);
 		for (int i = 0; i < gpsInter.size() / 2; i++) {
 			int iLoc = i;
 			inter = 0;
@@ -245,6 +319,7 @@ public class GpsIcIntegrate {
 									Math.abs(icInter.get(j)
 											- (gpsInter.get(iLoc * 2)
 													- gpsInter.get(i * 2) - timeInter)));
+
 					if (left < right) {
 						iLoc--;
 						inter += left;
@@ -260,7 +335,13 @@ public class GpsIcIntegrate {
 				}
 				if (min > inter) {
 					loc = i;
-					time = timeInter;
+					time = Time.getInterBtwTime(
+							icList.get(0).getString("xfsj"), gpsList.get(iLoc)
+									.getString("arriveTime"))
+							+ timeInter;
+					result.put(1,
+							map.get(1) == null ? beforeDepartIcNum : map.get(1)
+									+ beforeDepartIcNum);
 					result = map;
 				}
 				min = Math.min(min, inter);
@@ -272,9 +353,78 @@ public class GpsIcIntegrate {
 		System.out.println("min " + min);
 		System.out.println("gpsIc " + result);
 		System.out.println("timeInter " + time);
+
+		for (int i = 0; i < gpsList.size(); i++) {
+			if (result.containsKey(i + 1)) {
+				UpdateTraffic.update(MongoDBCoonnection.getMongoDBConn()
+						.getDB(), gps_collection,
+						gpsList.get(i).getObjectId("_id"), result.get(i + 1));
+			}
+		}
+		if(CheckTime2.isCheckTime(busselfId) ==-1){
+			mongodb.getCollection("checkTime3").insertOne(new Document("busselfId", busselfId)
+			.append("startTime", gpsList.get(0).getString("arriveTime")).append("endTime",  gpsList.get(gpsList.size()).getString("endTime"))
+			.append("inter", time).append("prob", 1.0));
+		}
+		else	mongodb.getCollection("checkTime").updateOne(new Document("busselfId", busselfId), 
+					new Document("startTime", gpsList.get(0).getString("arriveTime")).append("endTime",  gpsList.get(gpsList.size()).getString("endTime"))
+				.append("inter", time).append("prob", 1.0));
+		
 		return loc;
 	}
 
+	public static void process(int segmentId, String busselfId,
+			String startTime, String endTime) {
+		List<Document> gpsList = getGps(segmentId, busselfId, startTime,
+				endTime);
+		int stationNum = QueryBls.getStationNum(mongodb, segmentId);
+		int pre = 0;
+		int timeInter = 0;
+		List<List<Document>> noDealList = new ArrayList<List<Document>>();
+		String xlbh = String.format("%06d",
+				QueryBls.getSubInfoId(mongodb, segmentId));
+		for (int i = 0; i < gpsList.size(); i++) {
+
+			if (gpsList.get(i).getInteger("sngSerialId") == stationNum
+					|| i == gpsList.size() - 1
+					|| ((i + 1 < gpsList.size() && gpsList.get(i).getInteger(
+							"sngSerialId") > gpsList.get(i + 1).getInteger(
+							"sngSerialId")))) {
+				List<Document> subGps = null;
+				subGps = gpsList.subList(pre, i + 1);
+
+				List<Document> icList = getIc(xlbh, "0" + busselfId, subGps
+						.get(0).getString("arriveTime"),
+						subGps.get(subGps.size()).getString("leaveTime"));
+				if (isDeal(icList)) {
+					timeInter = minInterBteGpsIc(gpsList, icList, segmentId,
+							busselfId);
+				} else
+					noDealList.add(subGps);
+			}
+		}
+
+		for (int i = 0; i < noDealList.size(); i++) {
+			List<Document> icList = getIc(xlbh, "0" + busselfId, Time.add(noDealList.get(i)
+					.get(0).getString("arriveTime"),-timeInter),
+					Time.add(noDealList.get(i).get(noDealList.get(i).size()).getString("leaveTime"),-timeInter));
+			integrateWithInter(noDealList.get(i), icList, segmentId, busselfId, timeInter);
+		}
+
+	}
+
+	public static boolean isDeal(List<Document> icList) {
+		if (icList.size() == 0)
+			return false;
+		if (Math.abs(Time.getInterBtwTime(
+				icList.get(0).getString("arriveTime"),
+				icList.get(icList.size() - 1).getString("leaveTime"))) < 600) {
+			return false;
+		}
+		return true;
+	}
+	 
+	
 	public static void main(String[] args) {
 		String startTime = "2015-11-10 00:00:00";
 		String endTime = "2015-11-10 23:59:59";
@@ -295,10 +445,11 @@ public class GpsIcIntegrate {
 		for (int i = 0; i < icList.size(); i++)
 			System.out.println(icList.get(i));
 		System.out.println(icInter(icList));
-		System.out.println(minInterBteGpsIc(gpsInter(arrayList),
-				icInter(icList)));
-		
-		System.out.println(getDepartIcNum(segmentId, busselfId, arrayList.get(0).getString("arriveTime"), 1));
+		System.out.println(minInterBteGpsIc(arrayList, icList, segmentId,
+				busselfId));
+
+		System.out.println(getDepartIcNum(segmentId, busselfId, arrayList
+				.get(0).getString("arriveTime"), 1));
 	}
 
 }

@@ -23,6 +23,13 @@ import com.mongodb.client.MongoDatabase;
   * @since	[产品/模块版本]
   */
 public class UpdateTraffic {
+	/**
+	 * 更新站点的刷卡数据
+	 * @param mongodb db
+	 * @param collectionName 表名
+	 * @param id id号
+	 * @param traffic 客流量
+	 */
 	public static void update(DB mongodb,String collectionName,ObjectId id, int traffic){
 		mongodb.getCollection(collectionName).update(new BasicDBObject("_id",id), 
 			new BasicDBObject("$set",new BasicDBObject("traffic",traffic)));
