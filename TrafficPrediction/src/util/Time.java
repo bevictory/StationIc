@@ -10,6 +10,12 @@ import java.util.StringTokenizer;
 import org.bson.Document;
 
 public class Time {
+	/**
+	 * 在当前时间增加num*30秒
+	 * @param time yyyy-MM-dd HH:mm:ss
+	 * @param num
+	 * @return
+	 */
 	public static String addTime(String time, int num ){
 		SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		Date date=null;
@@ -35,6 +41,12 @@ public class Time {
 		time = formater.format(new Date(date.getTime()-num*30*1000));
 		return time;
 	}
+	/**
+	 * 在当前时间增加num天
+	 * @param time yyyy-MM-dd HH:mm:ss
+	 * @param num
+	 * @return
+	 */
 	public static String addDay(String time,int num){
 		SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		String str = "";
@@ -57,6 +69,11 @@ public class Time {
 		}
 		return str;
 	}
+	/**
+	 * 将当前时间分解为日期和时间两个部分
+	 * @param time
+	 * @return
+	 */
 	public static ArrayList<String> getDateTime(String time){
 		StringTokenizer str = new StringTokenizer(time, " ");
 		String str1=str.nextToken();
@@ -74,6 +91,11 @@ public class Time {
 		array.add(str2);
 		return array;
 	}
+	/**
+	 * 将时间减少num*30秒
+	 * @param time HH:mm:ss
+	 * @return
+	 */
 	public static String reduceTime(String time){
 		SimpleDateFormat formater = new SimpleDateFormat("HH:mm:ss");
 		String str = "";
@@ -265,6 +287,26 @@ public class Time {
 		return dis;
 		
 		
+	}
+	/**
+	 * 求解两个时间的差值
+	 * @param time1
+	 * @param time2
+	 * @return
+	 */
+	public static int getInterBtwTime(String time1,String time2){
+		SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		
+		int dis =0;
+		try {
+			 dis = (int)(formater.parse(time2).getTime()-formater.parse(time1 ).getTime())/1000;			 
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if(dis >=0) return dis;
+		
+		else return -1;
 	}
 	public static void main(String []args){
 		String startTime = "2015-11-09 00:00:00";String endTime = "2015-11-20 00:00:00";

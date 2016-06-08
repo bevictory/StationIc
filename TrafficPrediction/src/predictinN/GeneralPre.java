@@ -1,4 +1,4 @@
-package prediction;
+package predictinN;
 
 import java.util.ArrayList;
 
@@ -8,18 +8,22 @@ import decomposition.DealVector;
 import decomposition.Matrix;
 import transition.GeneralTransition;
 import transition.Transition;
+import transitionN.GeneralTransitionN;
 
 public class GeneralPre extends Prediction{
-	private GeneralTransition generalTrans ;
+	private GeneralTransitionN generalTrans ;
 	private double[] result ;
 	private int mode =1;
 	public void setMode(int mode) {
 		this.mode = mode;
 		this.generalTrans.setMode(mode);
 	}
+	public void setOrder(int order){
+		generalTrans.setOrder(order);
+	}
 	GeneralPre(int segmentId, int sngSerialId,String startTime, String endTime){
 		super(segmentId, sngSerialId, startTime, endTime);
-		generalTrans = new GeneralTransition();
+		generalTrans = new GeneralTransitionN();
 		
 	}
 	public ArrayList<Integer> getIc(int segmentId, int sngSerialId, String startTime, String endTime){
@@ -55,6 +59,7 @@ public class GeneralPre extends Prediction{
 		ArrayList<Integer> array = new ArrayList<Integer>();
 		ArrayList<Integer> pre = new ArrayList<Integer>();
 		array = getIc(segmentId, sngSerialId, time1, time2);
+		System.out.println(array);
 		for( int i =0 ;i < array.size()-1; i++){
 			double[] res = new double[Transition.getStateSpace()];
 			pre.add(prediction(res, array.get(i)/mode));
@@ -98,7 +103,7 @@ public class GeneralPre extends Prediction{
 			sngSerialId = i;
 			GeneralPre pre = new GeneralPre(segmentId, sngSerialId, startTime, endTime);
 			pre.setMode(1);
-			
+			pre.setOrder(3);
 			System.out.println(pre.acc(time1, time2));
 		}
 	}

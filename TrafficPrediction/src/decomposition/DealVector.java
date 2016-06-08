@@ -66,7 +66,8 @@ public class DealVector {
 				// TODO Auto-generated method stub
 				
 				if((double)arg0>(double)arg1) return -1;
-				else return 1;
+				else if((double)arg0<(double)arg1)return 1;
+				else return 0;
 			}
 
 			

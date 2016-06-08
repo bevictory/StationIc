@@ -16,6 +16,15 @@ public class Matrix {
 		}
 		
 	}
+	public static void add(double[][] matrix1, double [][] matrix2,int n ,double para){
+		for(int i=0; i < n; i ++){
+			for( int j=0;j<n;j++){
+				
+				matrix1[i][j] += matrix2[i][j]*para;
+				
+			}
+		}
+	}
 	/**
 	 * ¾ØÕóÊý³Ë
 	 * @param matrix ¾ØÕó
@@ -55,7 +64,9 @@ public class Matrix {
 	public static void print(double [][] matrix,int n){
 		for(int i=0;i<n;i++){
 			for(int j=0;j<n;j++){
-				System.out.print(matrix[i][j]+" ");
+				
+				System.out.printf("%.4f",matrix[i][j]);
+				System.out.print(" ");
 			}
 			System.out.println();
 		}

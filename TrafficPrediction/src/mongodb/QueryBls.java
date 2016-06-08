@@ -48,6 +48,23 @@ public class QueryBls {
 		}
 		return array;
 	}
+	
+	
+	public static int getSngrialId(DB mongodb,int segmentId, String stationId){
+		ArrayList<tuple> array = new ArrayList<tuple>();
+		ArrayList<BasicDBObject> list = new ArrayList<BasicDBObject>();
+		list.add(new BasicDBObject("lineId",segmentId));
+		list.add(new BasicDBObject("station.stationId",segmentId));
+		DBCursor cursor =mongodb.getCollection(collectionName).find(new BasicDBObject("$and",list),new BasicDBObject("lineId",1).append("station.$",1));
+		BasicDBObject doc = null;
+		if(cursor.iterator().hasNext()) doc=(BasicDBObject) cursor.iterator().next();
+		@SuppressWarnings("unchecked")
+		ArrayList<BasicDBObject> lis = (ArrayList<BasicDBObject>)doc.get("station");
+		
+		int sngSerialId=lis.get(0).getInt("sngSerialId");
+		return sngSerialId;
+			
+	}
 	public static void main(String[] args){
 		ArrayList<tuple> array= getSameStation(MongoDBAssis.getDb(),35610028,18);
 		System.out.println(array);
