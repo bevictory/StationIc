@@ -3,8 +3,12 @@ package stationTransition;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.mongodb.BasicDBObject;
+
 import util.ArrayHelper;
 import util.SegmentStationSequence;
+import util.Station;
+import util.StationInfo;
 import util.StationSequence;
 
 import mongodb.GetIcArray;
@@ -25,7 +29,10 @@ public class StationTransitionS {
 		return para;
 	}
 	private int mode =1;
-	
+	private int mod;
+	private int isDayModel =1;
+	private List<Integer> array;
+	private ArrayList<String> relate_station;
 	public void setMode(int mode) {
 		this.mode = mode;
 		this.stateSpace= this.stateSpace/mode+1;
@@ -33,21 +40,33 @@ public class StationTransitionS {
 
 
 	//private boolean isSetTrans = false;
-	public StationTransitionS(){
+	public StationTransitionS(String stationId, String startTime, String endTime,int isDaymodel,int mode,int mod){
+		this.mod = mod;
+		this.mode = mode;
+		this.isDayModel = isDaymodel;
 		array_relate = new ArrayList<List<Integer>>();
 		
-		
+		relate_station = new ArrayList<String>();
 		para = new ArrayList<Double>();
-		
+		StationSequence sequence= new StationSequence();
+		if(isDayModel==0) array= sequence.findBydayProcess(stationId, startTime, endTime, mod);
+		else if(isDayModel==1)array= sequence.findProcess(stationId, startTime, endTime, mod);
+		else array=sequence.findWorkDayProcess( stationId, startTime, endTime, mod);
+		System.out.println(array);
+		set_arrayRelate( stationId, startTime, endTime);
+		setStateSpace(getMaxState(ArrayHelper.getMax(array))/mode+1);
+		set_para();
 	}
-	public double[][][] getTransiton( String stationId, String startTime, String endTime,int mod){
+	public ArrayList<String> getRelate_station() {
+		return relate_station;
+	}
+	public void setRelate_station(ArrayList<String> relate_station) {
+		this.relate_station = relate_station;
+	}
+	public double[][][] getTransiton(){
 		if(!isSetTrans){
-			StationSequence sequence= new StationSequence();
 			
-			List<Integer> array = sequence.findBydayProcess(stationId, startTime, endTime, mod);
-			set_arrayRelate(stationId, startTime, endTime);
-			setStateSpace(getMaxState(ArrayHelper.getMax(array)));
-			transTensor = new double[stateSpace][stateSpace][stateSpace];set_para();
+			transTensor = new double[stateSpace][stateSpace][stateSpace];
 			toTransTensor(array);
 			isSetTrans = true;
 		}
@@ -62,12 +81,12 @@ public class StationTransitionS {
 			length =array_relate.get(i).size() < length?array_relate.get(i).size() : length;				
 		}
 		for(int i = 0; i < length-1 ; i ++){
-			int state =0 ;
+			double state =0 ;
 			for(int j =0 ; j < array_relate.size(); j++){
 				state+= array_relate.get(j).get(i) * para.get(j);
 			}
-			sum[state][array.get(i)] += 1;
-			transTensor[state][array.get(i)][array.get(i+1)] += 1;
+			sum[(int)state/mode][array.get(i)/mode] += 1;
+			transTensor[(int)state/mode][array.get(i)/mode][array.get(i+1)/mode] += 1;
 			
 		}
 		
@@ -94,12 +113,47 @@ public class StationTransitionS {
 		return max;
 	}
 	public void set_arrayRelate(String stationId, String startTime, String endTime){
-		
-		
-		
+		List<BasicDBObject> nearStationList = StationInfo.getNear(stationId, 1, 200);
+		StationSequence sequence = new StationSequence();
+		for(int i=0;i<nearStationList.size();i++){
+			if(Station.getStationIcSum(nearStationList.get(i).getString("stationId"))<1000||isDayModel==1&&!sequence.hasData(nearStationList.get(i).getString("stationId"), startTime, endTime, mod)) 
+				continue;
+			if(Station.getStationIcSum(nearStationList.get(i).getString("stationId"))<1000||isDayModel==2&&!sequence.hasWorkdayData(nearStationList.get(i).getString("stationId"), startTime, endTime, mod)) 
+				continue;
+			List<Integer> array;
+			relate_station.add(nearStationList.get(i).getString("stationId"));
+			if(isDayModel==0) array= sequence.findBydayProcess(nearStationList.get(i).getString("stationId"), startTime, endTime, mod);
+			else if(isDayModel==1)array= sequence.findProcess(nearStationList.get(i).getString("stationId"), startTime, endTime, mod);
+			else array=sequence.findWorkDayProcess(nearStationList.get(i).getString("stationId"),  startTime, endTime, mod);
+			System.out.println(array);
+			array_relate.add(array);
+		}		
 	}
+	
 	public void set_para(){
-		para.add(0.5);
-		para.add(0.5);
+		double sum=0;
+		List<Double> dis= new ArrayList<Double>();
+		for(int i=0;i<array_relate.size();i++){
+			double d = 1.0/getDis(array, array_relate.get(i));
+			dis.add(d);
+			sum+=d;
+		}
+		//System.out.println("sum " +sum);
+		for(int i=0;i<array_relate.size();i++){
+			para.add((double)dis.get(i)/sum);
+		}
+		
+		//System.out.println(para);
+	}
+	
+	
+	public int  getDis(List<Integer> array1, List<Integer> array2){
+		int dis =0; 
+		//System.out.println(array1.size()+" "+array2.size());
+		for(int i=0 ;i <array1.size();i++){
+			 dis += Math.abs(array1.get(i)- array2.get(i));
+		}
+		//dis= (int) Math.sqrt(dis);
+		return dis;
 	}
 }

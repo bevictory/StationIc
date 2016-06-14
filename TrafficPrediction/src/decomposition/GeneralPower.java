@@ -46,7 +46,7 @@ public class GeneralPower {
 		int rmNum =0;
 		
 		
-		Matrix.transpose(matrix, n);
+		//Matrix.transpose(matrix, n);
 		v=DealVector.init(rm, n, rmNum);
 		delta = DealVector.delta(rm, n, rmNum, p);
 		Matrix.multip_num(matrix, n, p);
@@ -69,13 +69,13 @@ public class GeneralPower {
 		
 		String startTime = "2015-11-10 00:00:00", endTime = "2015-11-13 23:59:59";
 		String time1 =  "2015-11-16 00:00:00" ,time2 =  "2015-11-16 23:59:59";
-		GeneralTransition generalPre  = new GeneralTransition();
-		
-		
-		double [][]matrix=generalPre.getTransiton("12111300000000045252", startTime, endTime, 5*60);
-		Matrix.print(matrix, generalPre.getStateSpace());
-		Matrix.transpose(matrix,  generalPre.getStateSpace());
-		DealVector.print(matrix[0],generalPre.getStateSpace() );
+//		GeneralTransition generalPre  = new GeneralTransition();
+//		
+//		
+//		double [][]matrix=generalPre.getTransiton();
+//		Matrix.print(matrix, generalPre.getStateSpace());
+//		Matrix.transpose(matrix,  generalPre.getStateSpace());
+//		DealVector.print(matrix[0],generalPre.getStateSpace() );
 //		double [] v=decomp(matrix,generalPre.getStateSpace());
 //		DealVector.print(v, generalPre.getStateSpace());
 	}

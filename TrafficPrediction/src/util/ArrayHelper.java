@@ -1,8 +1,10 @@
 package util;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import decomposition.DealVector;
 
@@ -38,6 +40,36 @@ public class ArrayHelper {
 		int length = getMax(array);
 		System.out.println(length);
 		DealVector.print(getInitState(array), length);
+		
+	}
+	/**
+	 * 从概率数组中获得概率前几位的
+	 * @param zeigen
+	 * @param topN
+	 * @return
+	 */
+	public static List<Integer> getTopN(double []zeigen,int topN){
+		List<Integer> result = new ArrayList<Integer>();
+		int[] loc = new int[zeigen.length];
+		for(int i=0;i<zeigen.length;i++){
+			loc[i] =i;
+		}
+		for(int i =0;i<topN;i++){
+			double max = zeigen[i];
+			for(int j=i+1;j<zeigen.length;j++){
+				if(zeigen[j]>zeigen[i]) {
+					double tmp= zeigen[i];
+					zeigen[i]= zeigen[j];
+					zeigen[j]=tmp;
+					int t=loc[i];
+					loc[i]=loc[j];
+					loc[j]=t;
+					
+				}
+			}
+			result.add(loc[i]);
+		}
+		return result;
 		
 	}
 

@@ -116,7 +116,8 @@ public class SegmentStationSequence {
 				end = Time.addHours(end, 24);
 			}
 			segmentIc.addAll(segmentIc(findByday(segmentId,stationId, start, end),mod));
-			//System.out.println(start);
+//			System.out.println(segmentId);
+//			System.out.println(start);
 			//System.out.println(end);
 								
 		}
@@ -146,11 +147,12 @@ public class SegmentStationSequence {
 				sum+=icList.get(i);
 				
 			}else{
-				result.add(sum);
+				result.add(sum);//System.out.println(j);
 				sum=0;
+				
 				while(++j<timeList.get(i)/mod){
 					result.add(0);
-					
+					//System.out.println(j);
 				}
 				
 				j=timeList.get(i)/mod;
@@ -158,9 +160,11 @@ public class SegmentStationSequence {
 			}
 		}
 		if(timeList.get(timeList.size()-1)/mod ==j) result.add(sum);
-		while(++j<Time.getInterBtwTime(startTime, endTime)/mod){
+		//System.out.println("final "+j);
+		while(++j<=Time.getInterBtwTime(startTime, endTime)/mod){
 			result.add(0);
 		}
+		//System.out.println("segmentIC size "+ j--);
 		//System.out.println(result.size());
 		return result;
 	}
@@ -184,6 +188,153 @@ public class SegmentStationSequence {
 		return list;
 		
 	}
+	public Boolean hasData(int segmentId,String stationId,String startTime,String endTime,int mod){
+		ArrayList<String> arrStart = Time.getDateTime(startTime),arrEnd = Time.getDateTime(endTime);
+		String start=startTime,end;
+		 StringTokenizer str =new StringTokenizer(endTime, " ");
+		str.nextToken();
+		end =new StringTokenizer(startTime, " ").nextToken()+" "+str.nextToken(); 
+		//System.out.println(end);
+		//end = Time.addDay(start, 1);
+		//System.out.println("find process ");
+		List<Integer> segmentIc = new ArrayList<Integer>();	
+		for (int i=0;i<=Time.disDays(arrStart.get(0), arrEnd.get(0));i++){
+			if(i>0)
+			{
+				start = Time.addHours(start, 24);
+				end = Time.addHours(end, 24);
+			}
+			if(find(segmentId,stationId, start, end) ==null){
+				return false;
+			}
+		}
+		return true;
+	}
+	public boolean hasWorkdayData(int segmentId,String stationId,String s, String e,int mod){
+		String startTime = "2015-11-10 "+s;
+		String endTime = "2015-11-13 "+e;
+		ArrayList<String> arrStart = Time.getDateTime(startTime),arrEnd = Time.getDateTime(endTime);
+		String start=startTime,end;
+		 StringTokenizer str =new StringTokenizer(endTime, " ");
+		str.nextToken();
+		
+		end =new StringTokenizer(startTime, " ").nextToken()+" "+str.nextToken(); 
+		//System.out.println(end);
+		//end = Time.addDay(start, 1);
+		//System.out.println("find process ");
+		List<Integer> segmentIc = new ArrayList<Integer>();
+		
+		for (int i=0;i<=Time.disDays(arrStart.get(0), arrEnd.get(0));i++){
+			if(i>0)
+			{
+				start = Time.addHours(start, 24);
+				end = Time.addHours(end, 24);
+			}
+			if(find(segmentId,stationId, start, end) ==null){
+				return false;
+			}
+			//segmentIc.addAll(segmentIc(find(segmentId,stationId, start, end),mod));
+//			//System.out.println(segmentId);
+//			System.out.println(start);
+//			System.out.println(start);
+//			System.out.println(end);
+								
+		}
+		if(find(segmentId, stationId, "2015-11-16 "+s, "2015-11-16 "+e)==null)
+			return false;;
+		
+		startTime = "2015-12-07 "+s;
+		 endTime = "2015-12-10 "+e;
+		 arrStart = Time.getDateTime(startTime);arrEnd = Time.getDateTime(endTime);
+		 start=startTime;
+		str =new StringTokenizer(endTime, " ");
+		str.nextToken();
+		
+		end =new StringTokenizer(startTime, " ").nextToken()+" "+str.nextToken(); 
+		//System.out.println(end);
+		//end = Time.addDay(start, 1);
+		//System.out.println("find process ");
+		
+		
+		for (int i=0;i<=Time.disDays(arrStart.get(0), arrEnd.get(0));i++){
+			if(i>0)
+			{
+				start = Time.addHours(start, 24);
+				end = Time.addHours(end, 24);
+			}
+			//segmentIc.addAll(segmentIc(find(segmentId,stationId, start, end),mod));
+//			System.out.println(segmentId);
+//			System.out.println(start);
+			if(find(segmentId,stationId, start, end) ==null){
+				return false;
+			}
+								
+		}
+		
+		return true;
+		//saveToFile("icArray", segmentIc);
+	}
+	public List<Integer> findWorkDayProcess(int segmentId,String stationId,String s, String e,int mod){
+		String startTime = "2015-11-10 "+s;
+		String endTime = "2015-11-13 "+e;
+		ArrayList<String> arrStart = Time.getDateTime(startTime),arrEnd = Time.getDateTime(endTime);
+		String start=startTime,end;
+		 StringTokenizer str =new StringTokenizer(endTime, " ");
+		str.nextToken();
+		
+		end =new StringTokenizer(startTime, " ").nextToken()+" "+str.nextToken(); 
+		//System.out.println(end);
+		//end = Time.addDay(start, 1);
+		//System.out.println("find process ");
+		List<Integer> segmentIc = new ArrayList<Integer>();
+		
+		for (int i=0;i<=Time.disDays(arrStart.get(0), arrEnd.get(0));i++){
+			if(i>0)
+			{
+				start = Time.addHours(start, 24);
+				end = Time.addHours(end, 24);
+			}
+			segmentIc.addAll(segmentIc(find(segmentId,stationId, start, end),mod));
+//			//System.out.println(segmentId);
+//			System.out.println(start);
+			//System.out.println(start);
+			//System.out.println(end);
+								
+		}
+		segmentIc.addAll(segmentIc(find(segmentId, stationId, "2015-11-16 "+s, "2015-11-16 "+e),mod));
+		
+		startTime = "2015-12-07 "+s;
+		 endTime = "2015-12-10 "+e;
+		 arrStart = Time.getDateTime(startTime);arrEnd = Time.getDateTime(endTime);
+		 start=startTime;
+		str =new StringTokenizer(endTime, " ");
+		str.nextToken();
+		
+		end =new StringTokenizer(startTime, " ").nextToken()+" "+str.nextToken(); 
+		//System.out.println(end);
+		//end = Time.addDay(start, 1);
+		//System.out.println("find process ");
+		
+		
+		for (int i=0;i<=Time.disDays(arrStart.get(0), arrEnd.get(0));i++){
+			if(i>0)
+			{
+				start = Time.addHours(start, 24);
+				end = Time.addHours(end, 24);
+			}
+			segmentIc.addAll(segmentIc(find(segmentId,stationId, start, end),mod));
+//			System.out.println(segmentId);
+//			System.out.println(start);
+			//System.out.println(start);
+			//System.out.println(end);
+								
+		}
+		
+		//System.out.println(segmentId+" "+s+" "+ e);
+		//System.out.println(segmentIc);
+		return segmentIc;
+		//saveToFile("icArray", segmentIc);
+	}
 	/**
 	 * 按时间段查询线路站点的数据
 	 * @param stationId
@@ -200,7 +351,7 @@ public class SegmentStationSequence {
 		end =new StringTokenizer(startTime, " ").nextToken()+" "+str.nextToken(); 
 		//System.out.println(end);
 		//end = Time.addDay(start, 1);
-		
+		//System.out.println("find process ");
 		List<Integer> segmentIc = new ArrayList<Integer>();	
 		for (int i=0;i<=Time.disDays(arrStart.get(0), arrEnd.get(0));i++){
 			if(i>0)
@@ -209,11 +360,14 @@ public class SegmentStationSequence {
 				end = Time.addHours(end, 24);
 			}
 			segmentIc.addAll(segmentIc(find(segmentId,stationId, start, end),mod));
-			System.out.println(start);
-			System.out.println(end);
+//			System.out.println(segmentId);
+//			System.out.println(start);
+			//System.out.println(start);
+			//System.out.println(end);
 								
 		}
-		System.out.println(segmentIc);
+		//System.out.println(segmentId+" "+startTime+" "+ endTime);
+		//System.out.println(segmentIc);
 		return segmentIc;
 		//saveToFile("icArray", segmentIc);
 	}
@@ -225,10 +379,11 @@ public class SegmentStationSequence {
 	 */
 	@SuppressWarnings("unchecked")
 	public List<BasicDBObject> find(int segmentId,String stationId,String startTime,String endTime){
-		DBCursor iterable=MongoDBAssis.getDb().getCollection("station").find(
+		DBCursor iterable=MongoDBAssis.getDb().getCollection("segmentStation").find(
 				new BasicDBObject("segmentId",segmentId).append("stationId",stationId).append("sequenceTraffic",new BasicDBObject("$elemMatch",
 						new BasicDBObject("startTime",new BasicDBObject("$lte",startTime)).append("endTime", new BasicDBObject("$gte",endTime))))
 				,new BasicDBObject("sequenceTraffic.$",1));
+		if(!iterable.hasNext()) return null;
 		BasicDBObject object = (BasicDBObject) iterable.next();
 		List<BasicDBObject> list = (List<BasicDBObject>) object.get("sequenceTraffic");
 		//System.out.println(object);
@@ -252,8 +407,8 @@ public class SegmentStationSequence {
 		}
 		icList = icList.subList(startLoc, endLoc);
 		timeList= timeList.subList(startLoc, endLoc);
-		System.out.println(timeList);
-		System.out.println(icList);
+		//System.out.println(timeList);
+		//System.out.println(icList);
 		dealTimeList(timeList, beginInter);
 		BasicDBObject resultBasicDBObject  = new BasicDBObject().append("startTime", startTime).append("endTime", endTime)
 				.append("timeList", timeList).append("trafficList", icList);
@@ -283,7 +438,48 @@ public class SegmentStationSequence {
 		}
 		return sum;
 	}
-	
+	@SuppressWarnings("unchecked")
+	public List<Integer> getStationIcNum(int segmentId,String stationId){
+		FindIterable<Document> iterable = MongoDBAssis.getMongoDatabase().getCollection("segmentStation").find(
+				new Document("segmentId",segmentId).append("stationId",stationId));
+		MongoCursor<Document> cursor=iterable.iterator();
+		int timeLength=0;
+		int sum =0;
+		List<Integer> result= new ArrayList<Integer>();
+		while(cursor.hasNext()){
+			List<Document> sequenceList = new ArrayList<Document>();
+			sequenceList = (List<Document>) cursor.next().get("sequenceTraffic");
+			if(sequenceList ==null) continue;
+			for(int i=0 ;i<sequenceList.size();i++){
+				timeLength+=Time.getInterBtwTime(sequenceList.get(i).getString("startTime"), 
+						sequenceList.get(i).getString("endTime"));
+				List<Integer> icList = (List<Integer>) sequenceList.get(i).get("trafficList");
+				for(int j=0;j<icList.size();j++){
+					sum+=icList.get(j);
+				}
+			}
+		}
+		result.add(sum);
+		result.add(timeLength);
+		return result;
+		
+		
+	}
+	public void getStationIcProcess(){
+		SegmentStation segsta = new SegmentStation();
+		List<Document> segstaList = segsta.getSegmentStaInfo();
+		List<Document> list = new ArrayList<Document>();
+		for(int i=0 ;i<segstaList.size();i++){
+			int segmentId = segstaList.get(i).getInteger("segmentId");
+			String stationIdString =segstaList.get(i).getString("stationId");
+			String stationName =segstaList.get(i).getString("stationName");
+			List<Integer> ic_time=getStationIcNum(segmentId,stationIdString);
+			Document document = new Document("segmentId",segmentId).append("stationId", stationIdString).append("stationName", stationName)
+					.append("icSum", ic_time.get(0)).append("runTime", ic_time.get(1)).append("average", (double)ic_time.get(0)*60/ic_time.get(1));
+			list.add(document);
+		}
+		MongoDBAssis.getMongoDatabase().getCollection("segmentstationAnalysis").insertMany(list);
+	}
 	public void saveToFile(String fileName,List<Integer> array) {
 		File file = new File(fileName);
 		FileOutputStream outputStream;
@@ -305,17 +501,24 @@ public class SegmentStationSequence {
 	
 	
 	public static void main(String []args){
-		String startTime = "2015-12-07 00:00:00";
-		String endTime = "2015-12-13 23:59:59";
-		SegmentStationIcArray.setCollectionName("gps_12_07_IC");
-		SegmentStationSequence s = new SegmentStationSequence(startTime, endTime);
-		s.process();
-		
-		startTime = "2015-11-10 00:00:00";
-		 endTime = "2015-11-16 23:59:59";
-		SegmentStationIcArray.setCollectionName("gps_11_10_IC");
-		 s = new SegmentStationSequence(startTime, endTime);
-		s.process();
+//		String startTime = "2015-12-07 00:00:00";
+//		String endTime = "2015-12-13 23:59:59";
+//		SegmentStationIcArray.setCollectionName("gps_12_07_IC");
+//		SegmentStationSequence s = new SegmentStationSequence(startTime, endTime);
+//		s.process();
+//		
+//		startTime = "2015-11-10 00:00:00";
+//		 endTime = "2015-11-16 23:59:59";
+//		SegmentStationIcArray.setCollectionName("gps_11_10_IC");
+//		 s = new SegmentStationSequence(startTime, endTime);
+//		s.process();
+		String startTime = "2015-12-08 06:30:00", endTime = "2015-12-08 09:29:59";
+//		SegmentStationSequence s = new SegmentStationSequence(startTime, endTime);
+//		s.findProcess(35621447, "12111300000000045252", startTime, endTime, 30*60);
+		SegmentStationSequence sequence = new SegmentStationSequence();
+		sequence.findWorkDayProcess(35633102,"12111300000000045252", "06:30:00", "09:29:59",  30*60);
+		//sequence.findProcess(35633102, "12111300000000045252", startTime, endTime,10*60);
+		//sequence.segmentIc(sequence.find(35633102, "12111300000000045252", startTime, endTime), 10*60);
 	}
 	
 }

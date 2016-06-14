@@ -97,6 +97,12 @@ public class StationIcArray {
 		result.add(icList);
 		return result;
 	}
+	public void dealTimeList(List<Integer> timeList,int inter){
+		for(int i=0;i<timeList.size();i++){
+			int time=timeList.get(i)-inter;
+			timeList.set(i, time);
+		}
+	}
 	/**
 	 * 将序列化的数据按一定时间间隔进行归类
 	 * @param sequenceIc 序列化的时间序列
@@ -108,6 +114,7 @@ public class StationIcArray {
 		List<Integer> timeList = sequenceIc.get(0);
 		List<Integer> icList = sequenceIc.get(1);
 		int j=0,sum=0;
+		
 		for(int i=0;i<timeList.size();i++){
 			if(timeList.get(i)/mod ==j){
 				sum+=icList.get(i);
@@ -137,13 +144,13 @@ public class StationIcArray {
 	}
 	public static void main(String[] args){
 		String stationId="12111300000000036090";
-		String startTime ="2015-11-10 06:30:00";
-		String endTime ="2015-11-10 09:30:00";
+		String startTime ="2015-11-16 06:30:00";
+		String endTime ="2015-11-16 09:30:00";
 		
 		StationIcArray s= new StationIcArray(stationId, startTime, endTime);
 		System.out.println(s.sequenceIc(s.getStationIcArray()).get(0));
 		System.out.println(s.sequenceIc(s.getStationIcArray()).get(1));
-		System.out.println(s.getSegmentIc(300));
+		System.out.println(s.getSegmentIc(1800));
 		
 	}
 }

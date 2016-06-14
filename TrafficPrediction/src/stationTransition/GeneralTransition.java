@@ -7,6 +7,7 @@ import java.util.List;
 import decomposition.Matrix;
 
 import util.ArrayHelper;
+import util.SegmentStationSequence;
 import util.StationSequence;
 
 public class GeneralTransition {
@@ -17,7 +18,8 @@ public class GeneralTransition {
 	public void setStateSpace(int stateSpace) {
 		this.stateSpace = stateSpace;
 	}
-
+	private int isDayModel=1;
+	private List<Integer> array;
 	private double[] initState;
 	private double[][] transition;
 	private int mode =1;
@@ -27,16 +29,25 @@ public class GeneralTransition {
 		this.stateSpace= this.stateSpace/mode+1;
 	}
 
-
+	public GeneralTransition(String stationId,String startTime, String endTime,int isDayModel,int mode ,int mod)
+	
+	{
+		this.mode =mode;
+		this.isDayModel = isDayModel;
+		
+		
+		StationSequence sequence= new StationSequence();
+		if(isDayModel==0)array=sequence.findBydayProcess(stationId, startTime, endTime, mod);
+		else if(isDayModel==1) array = sequence.findProcess(stationId, startTime, endTime, mod);
+		else array = sequence.findWorkDayProcess( stationId, startTime, endTime, mod);
+		setStateSpace(ArrayHelper.getMax(array)/mode+1);
+		initState = ArrayHelper.getInitState(array);
+	}
 	private boolean isSetTrans = false;
-	public double[][] getTransiton( String stationId,String startTime, String endTime,int mod){
+	public double[][] getTransiton(){
 		if(!isSetTrans){
-			StationSequence sequence= new StationSequence();
 			
-			List<Integer> array = sequence.findBydayProcess(stationId, startTime, endTime, mod);
-			//List<Integer> array = sequence.findProcess(stationId, startTime, endTime, mod);
-			setStateSpace(ArrayHelper.getMax(array)/mode+1);
-			initState = ArrayHelper.getInitState(array);
+						
 			toTransTensor(array);
 			Matrix.transpose(transition, stateSpace);
 			Matrix.print(transition, stateSpace);
@@ -59,20 +70,22 @@ public class GeneralTransition {
 		
 		 double[] sum = new double[stateSpace];
 		for(int i=0;i<array.size()-1;i++){
-			if(array.get(i)/mode>=stateSpace&&array.get(i+1)/mode>=stateSpace) {
-				
-				sum[stateSpace-1] += 1;
-				transition[stateSpace-1][stateSpace-1] +=1;
-			}else if(array.get(i)/mode>=stateSpace){
-				sum[stateSpace-1] += 1;
-				transition[stateSpace-1][array.get(i+1)] +=1;
-			}else if(array.get(i+1)/mode>=stateSpace){
-				sum[array.get(i)/mode] += 1;
-				transition[array.get(i)/mode][stateSpace-1] +=1;
-			}else {
-				sum[array.get(i)/mode] += 1;
-				transition[array.get(i)/mode][array.get(i+1)/mode] +=1;
-			}
+//			if(array.get(i)/mode>=stateSpace&&array.get(i+1)/mode>=stateSpace) {
+//				
+//				sum[stateSpace-1] += 1;
+//				transition[stateSpace-1][stateSpace-1] +=1;
+//			}else if(array.get(i)/mode>=stateSpace){
+//				sum[stateSpace-1] += 1;
+//				transition[stateSpace-1][array.get(i+1)] +=1;
+//			}else if(array.get(i+1)/mode>=stateSpace){
+//				sum[array.get(i)/mode] += 1;
+//				transition[array.get(i)/mode][stateSpace-1] +=1;
+//			}else {
+//				sum[array.get(i)/mode] += 1;
+//				transition[array.get(i)/mode][array.get(i+1)/mode] +=1;
+//			}
+			sum[array.get(i)/mode]+=1;
+			transition[array.get(i)/mode][array.get(i+1)/mode]+=1;
 			
 		}
 		for(int i=0;i<stateSpace;i++){

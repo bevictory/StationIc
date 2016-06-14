@@ -3,7 +3,7 @@ package decomposition;
 
 
 public class Tensor_3order_power {
-	private static double p = 0.48;//p< 1/(order-1)
+	private static double p = 0.45;//p< 1/(order-1)
 	public static double [] power(double [][][] tensor,int n ){
 		double[] v = new double [n];
 		double [] rm = new double[n];
@@ -24,27 +24,28 @@ public class Tensor_3order_power {
 				
 			}sum=0;
 		}
-		System.out.println("rm vector:");
-		for(int i=0;i<n;i++) System.out.print(rm[i]+" ");
-		System.out.println();
-		System.out.println("tensor deal:");
+		//System.out.println("rm vector:");
+		//for(int i=0;i<n;i++) System.out.print(rm[i]+" ");
+		//System.out.println();
+		//System.out.println("tensor deal:");
 		Tensor_3order.deal(tensor, n, rm2, rmNum, p);
-		Tensor_3order.print(tensor, n);
-		double lamda =1e-8;
+		//Tensor_3order.print(tensor, n);
+		double lamda =1e-10;
 		double [] z =new double[n];
 		v=DealVector.init(rm, n, rmNum);
-		DealVector.print(v, n);
+		//DealVector.print(v, n);
 		int ite=0;
 		while(DealVector.norm_2(v, z, n)>lamda){
 			DealVector.copy(z, v, n);
 			v=Tensor_3order.multip_order(tensor, v,rm, n);
 			ite++;
-			System.out.println("the ite num: "+ite);
+			//System.out.println("the ite num: "+ite);
 			//DealVector.print(v, n);
 			if(ite >50) {
 				break;
 			}
 		}
+		//DealVector.print(v, n);
 		return v;
 	}
 	public static void main(String []args){

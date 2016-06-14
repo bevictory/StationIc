@@ -31,8 +31,8 @@ public class Tensor_3order {
 				}
 			}
 		}
-		System.out.println("tensor order multip matrix");
-		Matrix.print(matrix, n);
+		//System.out.println("tensor order multip matrix");
+		//Matrix.print(matrix, n);
 		Matrix.transpose(matrix, n);
 		
 		result= Matrix.multip_vector(matrix, v, n);

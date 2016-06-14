@@ -213,7 +213,7 @@ public class StationSequence {
 			}
 		}
 		if(timeList.get(timeList.size()-1)/mod ==j) result.add(sum);
-		while(++j<Time.getInterBtwTime(startTime, endTime)/mod){
+		while(++j<=Time.getInterBtwTime(startTime, endTime)/mod){
 			result.add(0);
 		}
 		//System.out.println(result.size());
@@ -264,14 +264,162 @@ public class StationSequence {
 				end = Time.addHours(end, 24);
 			}
 			segmentIc.addAll(segmentIc(find(stationId, start, end),mod));
-			System.out.println(start);
-			System.out.println(end);
+//			System.out.println(start);
+//			System.out.println(end);
 								
 		}
-		System.out.println(segmentIc);
+		//System.out.println(segmentIc);
 		return segmentIc;
 		//saveToFile("icArray", segmentIc);
 	}
+	public Boolean hasData(String stationId,String startTime,String endTime,int mod){
+		ArrayList<String> arrStart = Time.getDateTime(startTime),arrEnd = Time.getDateTime(endTime);
+		String start=startTime,end;
+		 StringTokenizer str =new StringTokenizer(endTime, " ");
+		str.nextToken();
+		end =new StringTokenizer(startTime, " ").nextToken()+" "+str.nextToken(); 
+		//System.out.println(end);
+		//end = Time.addDay(start, 1);
+		//System.out.println("find process ");
+		List<Integer> segmentIc = new ArrayList<Integer>();	
+		for (int i=0;i<=Time.disDays(arrStart.get(0), arrEnd.get(0));i++){
+			if(i>0)
+			{
+				start = Time.addHours(start, 24);
+				end = Time.addHours(end, 24);
+			}
+			if(find(stationId, start, end) ==null){
+				return false;
+			}
+		}
+		return true;
+	}
+	public boolean hasWorkdayData(String stationId,String s, String e,int mod){
+		String startTime = "2015-11-10 "+s;
+		String endTime = "2015-11-13 "+e;
+		ArrayList<String> arrStart = Time.getDateTime(startTime),arrEnd = Time.getDateTime(endTime);
+		String start=startTime,end;
+		 StringTokenizer str =new StringTokenizer(endTime, " ");
+		str.nextToken();
+		
+		end =new StringTokenizer(startTime, " ").nextToken()+" "+str.nextToken(); 
+		//System.out.println(end);
+		//end = Time.addDay(start, 1);
+		//System.out.println("find process ");
+		List<Integer> segmentIc = new ArrayList<Integer>();
+		
+		for (int i=0;i<=Time.disDays(arrStart.get(0), arrEnd.get(0));i++){
+			if(i>0)
+			{
+				start = Time.addHours(start, 24);
+				end = Time.addHours(end, 24);
+			}
+			if(find(stationId, start, end) ==null){
+				return false;
+			}
+			//segmentIc.addAll(segmentIc(find(segmentId,stationId, start, end),mod));
+//			//System.out.println(segmentId);
+//			System.out.println(start);
+//			System.out.println(start);
+//			System.out.println(end);
+								
+		}
+		if(find( stationId, "2015-11-16 "+s, "2015-11-16 "+e)==null)
+			return false;;
+		
+		startTime = "2015-12-07 "+s;
+		 endTime = "2015-12-10 "+e;
+		 arrStart = Time.getDateTime(startTime);arrEnd = Time.getDateTime(endTime);
+		 start=startTime;
+		str =new StringTokenizer(endTime, " ");
+		str.nextToken();
+		
+		end =new StringTokenizer(startTime, " ").nextToken()+" "+str.nextToken(); 
+		//System.out.println(end);
+		//end = Time.addDay(start, 1);
+		//System.out.println("find process ");
+		
+		
+		for (int i=0;i<=Time.disDays(arrStart.get(0), arrEnd.get(0));i++){
+			if(i>0)
+			{
+				start = Time.addHours(start, 24);
+				end = Time.addHours(end, 24);
+			}
+			//segmentIc.addAll(segmentIc(find(segmentId,stationId, start, end),mod));
+//			System.out.println(segmentId);
+//			System.out.println(start);
+			if(find(stationId, start, end) ==null){
+				return false;
+			}
+								
+		}
+		
+		return true;
+		//saveToFile("icArray", segmentIc);
+	}
+	public List<Integer> findWorkDayProcess(String stationId,String s, String e,int mod){
+		String startTime = "2015-11-10 "+s;
+		String endTime = "2015-11-13 "+e;
+		ArrayList<String> arrStart = Time.getDateTime(startTime),arrEnd = Time.getDateTime(endTime);
+		String start=startTime,end;
+		 StringTokenizer str =new StringTokenizer(endTime, " ");
+		str.nextToken();
+		
+		end =new StringTokenizer(startTime, " ").nextToken()+" "+str.nextToken(); 
+		//System.out.println(end);
+		//end = Time.addDay(start, 1);
+		//System.out.println("find process ");
+		List<Integer> segmentIc = new ArrayList<Integer>();
+		
+		for (int i=0;i<=Time.disDays(arrStart.get(0), arrEnd.get(0));i++){
+			if(i>0)
+			{
+				start = Time.addHours(start, 24);
+				end = Time.addHours(end, 24);
+			}
+			segmentIc.addAll(segmentIc(find(stationId, start, end),mod));
+//			//System.out.println(segmentId);
+//			System.out.println(start);
+			//System.out.println(start);
+			//System.out.println(end);
+								
+		}
+		segmentIc.addAll(segmentIc(find( stationId, "2015-11-16 "+s, "2015-11-16 "+e),mod));
+		
+		startTime = "2015-12-07 "+s;
+		 endTime = "2015-12-10 "+e;
+		 arrStart = Time.getDateTime(startTime);arrEnd = Time.getDateTime(endTime);
+		 start=startTime;
+		str =new StringTokenizer(endTime, " ");
+		str.nextToken();
+		
+		end =new StringTokenizer(startTime, " ").nextToken()+" "+str.nextToken(); 
+		//System.out.println(end);
+		//end = Time.addDay(start, 1);
+		//System.out.println("find process ");
+		
+		
+		for (int i=0;i<=Time.disDays(arrStart.get(0), arrEnd.get(0));i++){
+			if(i>0)
+			{
+				start = Time.addHours(start, 24);
+				end = Time.addHours(end, 24);
+			}
+			segmentIc.addAll(segmentIc(find(stationId, start, end),mod));
+//			System.out.println(segmentId);
+//			System.out.println(start);
+			//System.out.println(start);
+			//System.out.println(end);
+								
+		}
+		
+		//System.out.println(segmentId+" "+s+" "+ e);
+		//System.out.println(segmentIc);
+		return segmentIc;
+		//saveToFile("icArray", segmentIc);
+	}
+	
 	/**
 	 * 获得指定时间段的数据
 	 * @param stationId
@@ -284,6 +432,7 @@ public class StationSequence {
 				new BasicDBObject("stationId",stationId).append("sequenceTraffic",new BasicDBObject("$elemMatch",
 						new BasicDBObject("startTime",new BasicDBObject("$lte",startTime)).append("endTime", new BasicDBObject("$gte",endTime))))
 				,new BasicDBObject("sequenceTraffic.$",1));
+		if(!iterable.hasNext()) return null;
 		BasicDBObject object = (BasicDBObject) iterable.next();
 		List<BasicDBObject> list = (List<BasicDBObject>) object.get("sequenceTraffic");
 		//System.out.println(object);
@@ -307,8 +456,8 @@ public class StationSequence {
 		}
 		icList = icList.subList(startLoc, endLoc);
 		timeList= timeList.subList(startLoc, endLoc);
-		System.out.println(timeList);
-		System.out.println(icList);
+		//System.out.println(timeList);
+		//System.out.println(icList);
 		dealTimeList(timeList, beginInter);
 		BasicDBObject resultBasicDBObject  = new BasicDBObject().append("startTime", startTime).append("endTime", endTime)
 				.append("timeList", timeList).append("trafficList", icList);

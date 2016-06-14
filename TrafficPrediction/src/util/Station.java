@@ -51,6 +51,42 @@ public class Station {
 		System.out.println(nameList.size());
 		insertStation(nameList, "station");
 	}
+	
+	
+	public void getStationInfo(){
+		DBCursor iterable = MongoDBAssis.getDb().getCollection(collectionNameString).find(
+				new BasicDBObject(),new BasicDBObject("station.stationId",1).append("_id", 0).append("station.stationName", 1).append("station.coordinate", 1));
+		System.out.println(iterable.size());
+		List<String> set = new ArrayList<String>();
+		List<Document> nameList = new ArrayList<Document>();
+		int num=0;
+		while(iterable.hasNext()){
+			ArrayList<BasicDBObject> arr=(ArrayList<BasicDBObject>) iterable.next().get("station");
+			//System.out.println(arr.size());
+			for(int i=0 ;i <arr.size();i++){
+				String stationIdString=arr.get(i).getString("stationId");
+				String stationName = arr.get(i).getString("stationName");
+				ArrayList<Double> coordinate= (ArrayList<Double>) arr.get(i).get("coordinate");
+				//stationIdString.trim();
+				///System.out.println(stationIdString);
+				num++;
+				if(!set.contains(stationIdString)){
+					set.add(stationIdString);
+					Document object = new Document("stationId",stationIdString).append("stationName", stationName).append("coordinate", coordinate);
+					nameList.add(object);
+				}else{
+					//System.out.println(stationIdString);
+					}
+			}
+		}
+		System.out.println(num);
+		System.out.println(set.size());
+		System.out.println(nameList.size());
+		insertStation(nameList, "StationInfo");
+	}
+	public void insertStationInfo(List<Document> list,String name){
+		MongoDBAssis.getMongoDatabase().getCollection(name).insertMany(list);
+	}
 	/**
 	 * ≤Â»Îstation–≈œ¢
 	 * @param list
@@ -91,13 +127,19 @@ public class Station {
 		return result;
 	}
 	
-	
+	public static int getStationIcSum(String stationId){
+		  FindIterable<Document> iterable=MongoDBAssis.getMongoDatabase().getCollection("stationAnalysis").find(new BasicDBObject("stationId",stationId));
+		  if(iterable.iterator().hasNext()){
+			 return  iterable.iterator().next().getInteger("icSum");
+		  }
+		  else return 0;
+	}
 	public int  getBusNum(){
 		List<Document> list= MongoDBAssis.getDb().getCollection("gps_11_10_IC").distinct("segmentId");
 		return list.size();
 	}
 	 public static void main(String[] args){
 		Station s =new Station();
-		System.out.println(s.getBusNum());
+		s.getStationInfo();
 	 }
 }

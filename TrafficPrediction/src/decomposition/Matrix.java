@@ -56,6 +56,33 @@ public class Matrix {
 		}
 		return result;
 	}
+	public static double [][]  init(int n,int m){
+		double [][]result = new double[n][m];
+		for(int i = 0; i < n; i++){
+			for(int j=0;j<m;i++){
+				result[i][j]=1.0;
+			result[i][j]/=m;
+			}
+		}
+		return result;
+		
+	}
+	public static double norm_2(double[][] v,double[][] z ,int n,int m){
+		double result=0;
+		for(int i=0;i<n;i++){
+			for(int j=0;j<m;i++){
+			result+=Math.pow((v[i][j]-z[i][j]),2);
+			}
+		}
+		return Math.sqrt(result);
+	}
+	public static void copy(double[][] z,double[][] v ,int n,int m){
+		for(int i = 0; i < n; i++){
+			for(int j=0;j<m;i++){
+				z[i][j]=v[i][j];
+			}
+		}
+	}
 	/**
 	 * ¾ØÕó´òÓ¡
 	 * @param matrix
