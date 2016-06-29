@@ -18,10 +18,11 @@ public class SegmentStation {
 	 * 从gps_ic表中获得segment station 的数据列表
 	 * @return
 	 */
+	@Deprecated
 	public BasicDBList getSegmentStation(){
 		BasicDBList list = (BasicDBList) MongoDBAssis.getDb().getCollection(collectionNameString).group(new BasicDBObject("segmentId",true).append("busselfId", true)
-		, new BasicDBObject(),new BasicDBObject("count",0), "function(cur,pre){count=pre.count+1;}");
-		System.out.println(list.size());		
+		, new BasicDBObject(),new BasicDBObject("count",0), "function(cur,pre){count=pre.count+cur.traffic;}");
+		System.out.println(list);		
 		return list;
 	}
 	/**
@@ -58,7 +59,8 @@ public class SegmentStation {
 		}
 		return result;
 	}
-	/*向segmentStation表中插入segment station 信息
+	/**向segmentStation表中插入segment station 信息
+	 * 调用getSegmentSta 函数
 	 *
 	 */
 	public void insert(){
@@ -77,6 +79,15 @@ public class SegmentStation {
 		}
 		return result;
 	}
+	public List<BasicDBObject> getSegStaFromAnaly(){
+		DBCursor iterable =MongoDBAssis.getDb().getCollection("segmentstationAnalysis")
+				.find(new BasicDBObject(),new BasicDBObject("stationId",1).append("_id", 0).append("segmentId", 1).append("stationName", 1)).sort(new BasicDBObject("icSum",-1));
+		List<BasicDBObject> result = new ArrayList<BasicDBObject>();
+		while(iterable.hasNext()){
+			result.add((BasicDBObject) iterable.next());
+		}
+		return result;
+	}
 	public static int getIcSum(int segmentId, String stationId){
 		FindIterable<Document> iterable=MongoDBAssis.getMongoDatabase().getCollection("segmentstationAnalysis")
 				.find(new BasicDBObject("segmentId",segmentId).append("stationId",stationId));
@@ -87,6 +98,7 @@ public class SegmentStation {
 	}
 	public static void main(String[] args){
 		SegmentStation s = new SegmentStation();
-		System.out.println(s.getIcSum(36371609, "12111300000000045252"));
+		s.getSegmentStation();
+		
 	}
 }

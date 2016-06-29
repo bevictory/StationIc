@@ -9,6 +9,16 @@ import java.util.Map;
 import decomposition.DealVector;
 
 public class ArrayHelper {
+	public static int pre=1;
+	
+	public static int getPre() {
+		return pre;
+	}
+
+	public static void setPre(int pre) {
+		ArrayHelper.pre = pre;
+	}
+
 	public static int getMax(List<Integer> array){
 		int max =0;
 		for(int i=0 ;i<array.size();i++){
@@ -31,6 +41,22 @@ public class ArrayHelper {
 			result[i]/=array.size();
 		}
 		return result;
+	}
+	public static int getMinDis(List<Integer> array , int state){
+		int min =Integer.MAX_VALUE;
+		for(int i=0;i<array.size();i++){
+			min = Math.min(Math.abs(state-array.get(i)), min);
+		}
+		return min;
+	}
+	public static boolean isPredic(List<Integer> list, int prediction,int mode){
+		
+		for(int i =-mode;i<=mode;i++){
+			if(list.contains(prediction+i)){
+				return true;
+			}
+		}
+		return false;
 	}
 	public static void main(String []args){
 		String time1 =  "2015-11-16 00:00:00" ,time2 =  "2015-11-16 23:59:59";

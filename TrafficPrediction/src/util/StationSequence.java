@@ -17,10 +17,13 @@ import org.bson.Document;
 
 import mongodb.MongoDBAssis;
 
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
+import com.mongodb.Block;
 import com.mongodb.DBCursor;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCursor;
+import com.mongodb.client.MongoDatabase;
 
 public class StationSequence {
 	private String startTime;
@@ -506,23 +509,123 @@ public class StationSequence {
 		
 		
 	}
+	
+	public static void getIcSumByHour(){
+		String startTime = "2015-11-10 00:00:00";
+		String endTime = "2015-11-16 23:59:59";
+		Station station = new Station();
+		
+		List<BasicDBObject> stationList = station.getStationInfoList();
+		
+		
+		StationSequence sequence = new StationSequence(startTime,endTime);
+		ArrayList<String> arrStart = Time.getDateTime(startTime),arrEnd = Time.getDateTime(endTime);
+		String start=startTime,end;
+		 StringTokenizer str =new StringTokenizer(endTime, " ");
+		str.nextToken();
+		
+		end =new StringTokenizer(startTime, " ").nextToken()+" "+str.nextToken(); 
+		for (int i=0;i<=Time.disDays(arrStart.get(0), arrEnd.get(0));i++){
+			if(i>0)
+			{
+				start = Time.addHours(start, 24);
+				end = Time.addHours(end, 24);
+			}
+			
+			int disHours = Time.disHours(start, end);
+			String start1= start,end1=end;
+			for(int j=0;j<=disHours;j++){
+				if(j>0){
+					start1=Time.addHours(start1, 1);
+					end1 =Time.addHours(start1, 1);
+				}else end1 =Time.addHours(start1, 1);
+				for(int k=0 ;k<stationList.size();k++){
+					getStationByHour("gps_11_10_IC", stationList.get(k).getString("stationId"),stationList.get(k).getString("stationName"), start1, end1);
+				}
+				System.out.println(start1);
+				System.out.println(end1);
+			}
+		}
+		startTime = "2015-12-07 00:00:00";
+		endTime = "2015-12-13 23:59:59";
+		arrStart = Time.getDateTime(startTime);arrEnd = Time.getDateTime(endTime);
+		start=startTime;
+		str =new StringTokenizer(endTime, " ");
+		str.nextToken();
+		end =new StringTokenizer(startTime, " ").nextToken()+" "+str.nextToken(); 
+		for (int i=0;i<=Time.disDays(arrStart.get(0), arrEnd.get(0));i++){
+			if(i>0)
+			{
+				start = Time.addHours(start, 24);
+				end = Time.addHours(end, 24);
+			}
+			int disHours = Time.disHours(start, end);
+			String start1= start,end1=end;
+			for(int j=0;j<disHours;j++){
+				if(j>0){
+					start1=Time.addHours(start1, 1);
+					end1 =Time.addHours(start1, 1);
+				}else end1 =Time.addHours(start1, 1);
+				for(int k=0 ;k<stationList.size();k++){
+					getStationByHour("gps_12_07_IC", stationList.get(k).getString("stationId"),stationList.get(k).getString("stationName"), start1, end1);
+				}
+				System.out.println(start1);
+				System.out.println(end1);
+			}
+		}
+	}
+	public static void getStationByHour(String collection, String stationId,String stationName,String startTime,String endTime){
+		MongoDatabase db  = MongoDBAssis.getMongoDatabase();
+		FindIterable<Document> iter = db.getCollection(collection).find(new Document("$and", Arrays.asList(new Document(
+				"stationId", stationId),  new Document("arriveTime", new Document(
+				"$gte", startTime)), new Document("arriveTime",
+				new Document("$lte", endTime))))).sort(new BasicDBObject("arriveTime",1));
+		int sum =0;
+		MongoCursor<Document> cursor =iter.iterator();
+		List<Document> list = new ArrayList<Document>();
+		Document doc=null;
+		while(cursor.hasNext()){
+			
+			doc=cursor.next();
+			sum+=doc.getInteger("traffic");
+			
+		}
+		System.out.println(sum);
+		
+		if(doc !=null) db.getCollection("stationIcByHour").insertOne(new Document("stationId",doc.getString("stationId"))
+		.append("stationName", stationName).append("sum", sum).append("startTime", startTime).append("endTime", endTime));
+		
+	}
+	@SuppressWarnings("unchecked")
+	public static void getStationByHour(String collection, String startTime,String endTime){
+		List<BasicDBObject> result=(List<BasicDBObject>) MongoDBAssis.getDb().getCollection(collection).group(new BasicDBObject("stationId",true),new BasicDBObject("arriveTime",
+				new BasicDBObject("$gte",startTime)).append("arriveTime",new BasicDBObject("$lte",endTime) ), new BasicDBObject("count",0), 
+				"function(cur,pre){count=pre.count+cur.traffic;}");
+		System.out.println(result);
+	}
 	public static void main(String []args){
-		String startTime = "2015-12-07 00:00:00";
-		String endTime = "2015-12-13 23:59:59";
+//		Station station=new Station();
+//		station.getStationId();
+//		station.insert();
+//		String startTime = "2015-11-10 00:00:00";
+//		String endTime = "2015-11-16 23:59:59";
 //		StationIcArray.setCollectionName("gps_11_10_IC");
 //		StationSequence sequence = new StationSequence(startTime,endTime);
 //		sequence.process();
-//		 startTime = "2015-12-07 06:00:00";
-//		 endTime = "2015-12-13 08:59:59";
+//		 startTime = "2015-12-07 00:00:00";
+//		 endTime = "2015-12-13 23:59:59";
 //		StationIcArray.setCollectionName("gps_12_07_IC");
 //		 sequence = new StationSequence(startTime,endTime);
 //		sequence.process();
+//		sequence.getStationIcProcess();
+		
+		
 		
 		StationSequence s = new StationSequence();
 		//s.find("12111300000000045252",	 startTime, endTime);
-		List<Integer> list = s.findBydayProcess("12111300000000045252", startTime, endTime, 60*60);
-		
-		s.saveToFile("icArray12_60",list);
+		List<Integer> list = s.findWorkDayProcess( "12111300000000035232", "06:30:00", "09:29:59",  30*60);
+		System.out.println(list);
+//		s.saveToFile("icArray12_60",list);
 		//s.findProcess("12111300000000045252", startTime, endTime, 5*60);
 		//s.getStationIcProcess();
 		//System.out.println(s.getSum());

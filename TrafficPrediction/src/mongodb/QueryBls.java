@@ -81,7 +81,7 @@ public class QueryBls {
 		ArrayList<tuple> array = new ArrayList<tuple>();
 		ArrayList<BasicDBObject> list = new ArrayList<BasicDBObject>();
 		list.add(new BasicDBObject("lineId",segmentId));
-		list.add(new BasicDBObject("station.stationId",segmentId));
+		list.add(new BasicDBObject("station.stationId",stationId));
 		DBCursor cursor =mongodb.getCollection(collectionName).find(new BasicDBObject("$and",list),new BasicDBObject("lineId",1).append("station.$",1));
 		BasicDBObject doc = null;
 		if(cursor.iterator().hasNext()) doc=(BasicDBObject) cursor.iterator().next();
@@ -92,7 +92,33 @@ public class QueryBls {
 		return sngSerialId;
 			
 	}
+	public static String getSngrialId(DB mongodb, String stationId){
+		ArrayList<tuple> array = new ArrayList<tuple>();
+		ArrayList<BasicDBObject> list = new ArrayList<BasicDBObject>();
+		
+		list.add(new BasicDBObject("station.stationId",stationId));
+		DBCursor cursor =mongodb.getCollection(collectionName).find(new BasicDBObject("$and",list),new BasicDBObject("lineId",1).append("station.$",1));
+		BasicDBObject doc = null;
+		if(cursor.iterator().hasNext()) doc=(BasicDBObject) cursor.iterator().next();
+		@SuppressWarnings("unchecked")
+		ArrayList<BasicDBObject> lis = (ArrayList<BasicDBObject>)doc.get("station");
+		
+		return lis.get(0).getString("stationName");
 	
+			
+	}
+	public static String getLineName(DB mongodb,int segmentId){
+	
+		ArrayList<BasicDBObject> list = new ArrayList<BasicDBObject>();
+		list.add(new BasicDBObject("lineId",segmentId));
+		
+		DBCursor cursor =mongodb.getCollection(collectionName).find(new BasicDBObject("$and",list),new BasicDBObject("lineId",1).append("lineName",1));
+		BasicDBObject doc = null;
+		if(cursor.iterator().hasNext()) doc=(BasicDBObject) cursor.iterator().next();
+		
+		return doc.getString("lineName");
+			
+	}
 	
 	public static List<Integer> getSegmentIdByStation(String stationId){
 		List<Integer> result =new ArrayList<Integer>();
@@ -106,8 +132,9 @@ public class QueryBls {
 		return result;
 	}
 	public static void main(String[] args){
-		List<Integer> array= getSameStation(MongoDBAssis.getDb(),18,"12111300000000045252");
-		System.out.println(array);
+		List<Integer> array= getSameStation(MongoDBAssis.getDb(),18,"12111300000000045323");
+		for(int i =0;i<array.size();i++)
+			System.out.println(QueryBls.getLineName(MongoDBAssis.getDb(), array.get(i)));
 		
 		//System.out.println(getStationNum(MongoDBCoonnection.getInstance().getMongoData(),35557702));
 		//System.out.println(getStationId(MongoDBCoonnection.getInstance().getDB(),35557702,2));

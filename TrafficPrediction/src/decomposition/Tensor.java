@@ -12,9 +12,9 @@ public class Tensor {
 				}
 			}
 		}
-		System.out.println("tensor order multip matrix");
-		Matrix.print(matrix, n);
-		System.out.println("the matrix");
+//		System.out.println("tensor order multip matrix");
+//		Matrix.print(matrix, n);
+//		System.out.println("the matrix");
 		Matrix.transpose(matrix, n);
 		return matrix;
 	}
@@ -49,7 +49,7 @@ public class Tensor {
 //				}
 //			}
 //		}
-		System.out.println("multip order 5");
+		//System.out.println("multip order 5");
 		for(int i = 0; i < n; i++){
 			for(int j = 0; j<n; j++){
 				for(int k =0; k < n; k++){
@@ -225,6 +225,26 @@ public class Tensor {
 								}
 							}
 
+						
+
+					}
+				}
+			}
+		}
+	}
+	
+	
+	public static void deal(double [][][][] tensor,int n, int m,double p){
+		for (int i = 0; i < n; i++) {
+			for (int j = 0; j < n; j++) {
+				for (int k = 0; k < m; k++) {
+					for (int l = 0; l < m; l++) {
+						
+							
+									tensor[i][j][k][l] = tensor[i][j][k][l]
+											* p ;
+								
+							
 						
 
 					}

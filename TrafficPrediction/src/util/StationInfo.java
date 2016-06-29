@@ -67,7 +67,7 @@ public class StationInfo {
 	}
 
 	public static void main(String [] args){
-		getNear( "12111300000000045252", 1,200);
+		System.out.println(getNear( "12111300000000045252", 1,200));
 	}
 
 }

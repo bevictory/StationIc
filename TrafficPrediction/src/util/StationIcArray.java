@@ -144,13 +144,23 @@ public class StationIcArray {
 	}
 	public static void main(String[] args){
 		String stationId="12111300000000036090";
-		String startTime ="2015-11-16 06:30:00";
-		String endTime ="2015-11-16 09:30:00";
+		String startTime ="2015-11-16 09:00:00";
+		String endTime ="2015-11-16 10:00:00";
 		
 		StationIcArray s= new StationIcArray(stationId, startTime, endTime);
-		System.out.println(s.sequenceIc(s.getStationIcArray()).get(0));
-		System.out.println(s.sequenceIc(s.getStationIcArray()).get(1));
-		System.out.println(s.getSegmentIc(1800));
+//		System.out.println(s.sequenceIc(s.getStationIcArray()).get(0));
+//		System.out.println(s.sequenceIc(s.getStationIcArray()).get(1));
+//		System.out.println(s.getSegmentIc(1800));
 		
+		Station station = new Station();
+		station.getStationIdList();
+		List<BasicDBObject> stationList = station.getStationInfoList();
+		
+		for(int i=0 ;i<stationList.size();i++){
+			String stationIdString =stationList.get(i).getString("stationId");
+			String stationName =stationList.get(i).getString("stationName");
+			s= new StationIcArray(stationIdString, startTime, endTime);
+			s.getSegmentIc(3600);
+		}
 	}
 }

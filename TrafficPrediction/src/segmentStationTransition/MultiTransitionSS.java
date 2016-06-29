@@ -54,11 +54,12 @@ public class MultiTransitionSS {
 		if(isDayModel==0) array = sequence.findBydayProcess(segmentId,stationId, startTime, endTime, mod);
 		else if(isDayModel==1) array = sequence.findProcess(segmentId,stationId, startTime, endTime, mod);
 		else array = sequence.findWorkDayProcess(segmentId, stationId, startTime, endTime, mod);
-		setStateSpace(getMaxState(ArrayHelper.getMax(array))/mode+1);
+		
 		
 		
 		clusterList = new ArrayList<SegmentStationTuple>();
 		getCluster(segmentId, stationId, startTime, endTime);
+		setStateSpace(getMaxState(ArrayHelper.getMax(array))/mode+1);
 		setPara();
 		getTransition();
 		
@@ -87,7 +88,7 @@ public class MultiTransitionSS {
 				}
 				if(i ==0) array1= array;
 				if(j==0) array2=array;
-				double d= 1.0/getDis(array1, array2);
+				double d= getDis(array1, array2);
 				dis .add(d);
 				sum+=d;
 			}
@@ -108,6 +109,7 @@ public class MultiTransitionSS {
 		//System.out.println(array1.size()+" "+array2.size());
 		for(int i=0 ;i <array1.size();i++){
 			 dis += Math.abs(Math.pow(array1.get(i)- array2.get(i),2));
+			// dis += Math.abs((array1.get(i)- array2.get(i)));
 		}
 		dis= (int) Math.sqrt(dis);
 		return dis;

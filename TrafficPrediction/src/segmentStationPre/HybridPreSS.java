@@ -186,10 +186,10 @@ public class HybridPreSS {
 		int segmentId = 36371609;
 		int sngSerialId = 4;
 		
-		String startTime = "06:30:00", endTime = "09:29:59";
-		String time1 =  "2015-12-11 06:30:00" ,time2 =  "2015-12-11 09:29:59";
+		String startTime = "06:30:00", endTime = "10:00:00";
+		String time1 =  "2015-12-11 06:30:00" ,time2 =  "2015-12-11 09:59:59";
 		HybridPreSS linePreSS  = 
-				new HybridPreSS(36371609, "12111300000000045252", startTime, endTime,2,3, 20*60);
+				new HybridPreSS(35632502, "12111300000000045323", startTime, endTime,2,4, 30*60);
 		//linePreSS.setMode(3);
 //		generalPre.setMode(30);
 //		System.out.println(generalPre.acc(time1, time2));

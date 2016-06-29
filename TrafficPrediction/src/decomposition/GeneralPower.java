@@ -62,7 +62,7 @@ public class GeneralPower {
 				break;
 			}
 		}	
-		System.out.println("the ite num: "+ ite);
+		//System.out.println("the ite num: "+ ite);
 		return v;
 	}
 	public static void main(String []args){

@@ -56,6 +56,17 @@ public class Tensor_3order {
 		}
 		return matrix;
 	}
+	public static double[] orderMulti_two(double [][][] tensor_3order, double [][] v, int n){
+		double []vector  =new double[n];
+		for(int i = 0; i < n; i++){
+			for(int j = 0; j<n; j++){
+				for(int k =0; k < n; k++){
+					 vector[i] += (tensor_3order[j][k][i] * v[j][k]);
+				}
+			}
+		}
+		return vector;
+	}
 	/**
 	 * 3阶张量的打印
 	 * @param tensor
@@ -68,6 +79,26 @@ public class Tensor_3order {
 					System.out.print(tensor[i][j][k]+" ");
 				}
 				System.out.println();
+			}
+		}
+	}
+	public static void reset(double [][][] tensor,int n1,int n2,int n3 ){
+		for(int i = 0; i < n1; i++){
+			for(int j = 0; j<n2; j++){
+				for(int k =0; k < n3; k++){
+					tensor[i][j][k]=0;
+				}
+				
+			}
+		}
+	}
+	public static void add(double[][][] tensor, double [][][]tensor1, int n,double para){
+		for(int i = 0; i < n; i++){
+			for(int j = 0; j<n; j++){
+				for(int k =0; k < n; k++){
+					tensor[i][j][k]+=tensor1[i][j][k]*para;
+				}
+				
 			}
 		}
 	}

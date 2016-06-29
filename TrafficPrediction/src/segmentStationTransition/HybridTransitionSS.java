@@ -200,9 +200,10 @@ public class HybridTransitionSS {
 		int dis =0; 
 		//System.out.println(array1.size()+" "+array2.size());
 		for(int i=0 ;i <array1.size();i++){
-			 dis += Math.abs(Math.pow(array1.get(i)- array2.get(i),2));
+//			 dis += Math.abs(Math.pow(array1.get(i)- array2.get(i),2));
+			dis += Math.abs(array1.get(i)- array2.get(i));
 		}
-		dis= (int) Math.sqrt(dis);
+		//dis= (int) Math.sqrt(dis);
 		return dis;
 	}
 	

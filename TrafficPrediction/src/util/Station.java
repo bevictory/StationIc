@@ -52,7 +52,10 @@ public class Station {
 		insertStation(nameList, "station");
 	}
 	
-	
+	/**
+	 * 向stationInfo
+	 * 表中插入数据
+	 */
 	public void getStationInfo(){
 		DBCursor iterable = MongoDBAssis.getDb().getCollection(collectionNameString).find(
 				new BasicDBObject(),new BasicDBObject("station.stationId",1).append("_id", 0).append("station.stationName", 1).append("station.coordinate", 1));
@@ -134,12 +137,22 @@ public class Station {
 		  }
 		  else return 0;
 	}
+	public static List<BasicDBObject> getStaFromAnaly(){
+
+		  DBCursor iterable =MongoDBAssis.getDb().getCollection("stationAnalysis")
+					.find(new BasicDBObject(),new BasicDBObject("stationId",1).append("_id", 0).append("stationName", 1)).sort(new BasicDBObject("icSum",-1));
+			List<BasicDBObject> result = new ArrayList<BasicDBObject>();
+			while(iterable.hasNext()){
+				result.add((BasicDBObject) iterable.next());
+			}
+			return result;	
+	}
 	public int  getBusNum(){
 		List<Document> list= MongoDBAssis.getDb().getCollection("gps_11_10_IC").distinct("segmentId");
 		return list.size();
 	}
 	 public static void main(String[] args){
 		Station s =new Station();
-		s.getStationInfo();
+		s.insert();
 	 }
 }

@@ -4,11 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 
+import com.mongodb.BasicDBObject;
+
 import mongodb.MongoDBAssis;
 import mongodb.QueryBls;
 
 import decomposition.DealVector;
 import decomposition.Matrix;
+import decomposition.TensorMultiPower_4order;
 import decomposition.TensorPower_5order;
 import decomposition.Tensor_3order;
 import decomposition.Tensor_3order_power;
@@ -21,6 +24,7 @@ import segmentStationTransition.MultiTransitionSS;
 import transition.MultiTransition;
 import transition.Transition;
 import util.ArrayHelper;
+import util.SegmentStation;
 import util.SegmentStationSequence;
 import util.SegmentStationTuple;
 
@@ -126,7 +130,7 @@ public class MultiPreSS {
 	
 	public void prediction(double [][]result){
 		result = Tensor_4order.multip_2order_formulti(multiTrans.getTransition(),
-				result, multiTrans.getClusterNum(), Transition.getStateSpace());
+				result, multiTrans.getClusterNum(),multiTrans.getStateSpace());
 		
 	}
 	public double acc(String startTime, String endTime,int topN){
@@ -159,12 +163,12 @@ public class MultiPreSS {
 //			double [] result=prediction(res,array.get(i-1),(int)state_l, (int)state_s,array.get(i));
 //			
 			double[][] result = new double[multiTrans.getClusterNum()][multiTrans.getStateSpace()];
-			result[0][array.get(i)/mode] = 1.0;
-			result[1][array_relate.get(0).get(i)/mode] = 1.0;
-			result[2][array_relate.get(1).get(i)/mode] = 1.0;
-			for(int j=0;j<multiTrans.getClusterNum();i++){
-				if(j==0)result[0][array.get(i)/mode]=1.0;
-				else result[j][array_relate.get(j).get(i)/mode]=1.0;
+//			result[0][array.get(i)/mode] = 1.0;
+//			result[1][array_relate.get(0).get(i)/mode] = 1.0;
+//			result[2][array_relate.get(1).get(i)/mode] = 1.0;
+			for(int j=0;j<multiTrans.getClusterNum();j++){
+				if(j==0)result[0][array.get(i)/mode>multiTrans.getStateSpace()-1?multiTrans.getStateSpace()-1:array.get(i)/mode]=1.0;
+				else result[j][array.get(i)/mode>multiTrans.getStateSpace()-1?multiTrans.getStateSpace()-1:array.get(i)/mode]=1.0;
 			}
 			prediction(result);
 			List<Integer> pre_topN= ArrayHelper.getTopN(result[0], topN);
@@ -179,14 +183,64 @@ public class MultiPreSS {
 		
 		return ((double)accurrate/(length-1));
 	}
+	
+	public double acc_Zeigen(String time1, String time2,int topN){
+		double [][][][] tensor = multiTrans.getTransition();
+		double[][] z_eigen = getZ(tensor, multiTrans.getStateSpace());
+		//DealVector.print(z_eigen, lineTrans.getStateSpace());
+		SegmentStationSequence sequence = new SegmentStationSequence();
+		List<Integer> array=sequence.findProcess(segmentId,stationId, time1, time2, mod);
+		int accurrate=0;
+		List<Integer> topN_result=ArrayHelper.getTopN(z_eigen[0], topN);
+		for(int  i =0 ;i< array.size(); i++){
+			if(topN_result.contains(Integer.valueOf(array.get(i)/mode))){
+				accurrate+=1;
+			}
+		}
+		
+		return ((double)accurrate/(array.size()));
+	}
+	public double[][] getZ(double[][][][] tensor,int state){
+		return TensorMultiPower_4order.power(tensor, multiTrans.getClusterNum(),multiTrans.getStateSpace());
+	}
 	public static void main(String []args){
 		int segmentId = 36371609;
 		int sngSerialId = 4;
 		
-		String startTime = "06:30:00", endTime = "09:29:59";
-		String time1 =  "2015-12-11 06:30:00" ,time2 =  "2015-12-11 09:29:59";
-		MultiPreSS linePreSS  = 
-				new MultiPreSS(36371609, "12111300000000045252", startTime, endTime,2,3, 20*60);
+		String startTime = "06:30:00", endTime = "10:00:00";
+		String time1 =  "2015-12-11 06:30:00" ,time2 =  "2015-12-11 09:59:59";
+//		MultiPreSS multiPreSS  = 
+//				new MultiPreSS(35632502, "12111300000000045323", startTime, endTime,2,5, 30*60);
+		
+		
+		SegmentStation  segSta = new SegmentStation();
+		SegmentStationSequence sequence = new SegmentStationSequence();
+		List<BasicDBObject> list=segSta.getSegStaFromAnaly();
+		
+	
+		
+		
+		for(int i =0;i<100;i++){
+			int seg =list.get(i).getInt("segmentId") ;
+			String sta =list.get(i).getString("stationId");
+			if(!sequence.hasWorkdayData(seg, sta, startTime, endTime, 30*60)) continue;
+			if(QueryBls.getSameStation(MongoDBAssis.getDb(), seg, sta).size() ==0) continue;
+			MultiPreSS multiPreSS  = 
+					new MultiPreSS(seg, sta, startTime, endTime,2,5, 30*60);
+			System.out.println(multiPreSS.multiTrans.getClusterNum());
+			GeneralPreSS generalPreSS =  new GeneralPreSS(seg, sta, startTime, endTime,2,5, 30*60);
+			double multiAcc = multiPreSS.acc(time1, time2,2);
+			double multi_zAcc = multiPreSS.acc_Zeigen(time1, time2, 2);
+			double gene_zAcc = generalPreSS.acc_Zeigen(time1, time2, 2);
+			double GeneAcc = generalPreSS.acc(time1, time2, 2);
+			list.get(i).append("MultiAcc", multiAcc);
+			list.get(i).append("multi_zAcc", multi_zAcc);
+			list.get(i).append("GeneAcc", GeneAcc);
+			list.get(i).append("Gene_zAcc", gene_zAcc);
+			MongoDBAssis.getDb().getCollection("segStaMultiPre_mode5_mod30_ouji").insert(list.get(i));
+			System.out.println(list.get(i));
+		}
+		
 		//linePreSS.setMode(3);
 //		generalPre.setMode(30);
 //		System.out.println(generalPre.acc(time1, time2));
@@ -200,6 +254,6 @@ public class MultiPreSS {
 		
 		//System.out.println(linePreSS.acc_Zeigen(time1, time2, 2));
 		//System.out.println("para "+linePreSS.multiTrans.getPara());
-		System.out.println(linePreSS.acc(time1, time2,2));
+//		System.out.println(multiPreSS.acc(time1, time2,2));
 	}
 }

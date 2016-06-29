@@ -25,6 +25,15 @@ public class Matrix {
 			}
 		}
 	}
+	public static void add(double[][] matrix1,int n ,int m,double para){
+		for(int i=0; i < n; i ++){
+			for( int j=0;j<m;j++){
+				
+				matrix1[i][j] *= para;
+				
+			}
+		}
+	}
 	/**
 	 * ¾ØÕóÊý³Ë
 	 * @param matrix ¾ØÕó
@@ -59,18 +68,18 @@ public class Matrix {
 	public static double [][]  init(int n,int m){
 		double [][]result = new double[n][m];
 		for(int i = 0; i < n; i++){
-			for(int j=0;j<m;i++){
+			for(int j=0;j<m;j++){
 				result[i][j]=1.0;
-			result[i][j]/=m;
+			result[i][j]/=m*n;
 			}
 		}
 		return result;
-		
+	
 	}
 	public static double norm_2(double[][] v,double[][] z ,int n,int m){
 		double result=0;
 		for(int i=0;i<n;i++){
-			for(int j=0;j<m;i++){
+			for(int j=0;j<m;j++){
 			result+=Math.pow((v[i][j]-z[i][j]),2);
 			}
 		}
@@ -78,8 +87,15 @@ public class Matrix {
 	}
 	public static void copy(double[][] z,double[][] v ,int n,int m){
 		for(int i = 0; i < n; i++){
-			for(int j=0;j<m;i++){
+			for(int j=0;j<m;j++){
 				z[i][j]=v[i][j];
+			}
+		}
+	}
+	public static void reset(double[][] z,int n){
+		for(int i = 0; i < n; i++){
+			for(int j=0;j<n;j++){
+				z[i][j]=0;
 			}
 		}
 	}

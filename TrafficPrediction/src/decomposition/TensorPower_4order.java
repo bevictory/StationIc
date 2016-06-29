@@ -50,11 +50,11 @@ public class TensorPower_4order {
 			}sum=0;
 			
 		}
-		System.out.println("rm vector:");
-		for(int i=0;i<n;i++) System.out.print(rm[i]+" ");
-		System.out.println();
+		//System.out.println("rm vector:");
+		//for(int i=0;i<n;i++) System.out.print(rm[i]+" ");
+		//System.out.println();
 
-		System.out.println("tensor deal:");
+		//System.out.println("tensor deal:");
 		Tensor.deal(tensor, n, rm, rm3, rmNum, p);
 //		for(int i = 0; i < 3; i++){
 //			for(int j = 0; j<3; j++){
@@ -89,8 +89,8 @@ public class TensorPower_4order {
 				}
 			}
 			ite++;
-			System.out.println("the ite num: "+ite);
-			DealVector.print(v, n);
+			//System.out.println("the ite num: "+ite);
+			//DealVector.print(v, n);
 			if(ite >100) {
 				break;
 			}
