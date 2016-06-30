@@ -45,6 +45,7 @@ public class MultiPreSS {
 	private int mod;
 	private double[] result ;
 	private int mode =1;
+	private int order=1;
 	public void setMode(int mode) {
 		this.mode = mode;
 		this.multiTrans.setMode(mode);
@@ -73,6 +74,20 @@ public class MultiPreSS {
 		this.mode = mode;
 		//super(stationId, startTime, endTime,mod);
 		multiTrans = new MultiTransitionSS(segmentId, stationId, startTime, endTime,isDayModel,mode, mod);
+		//multiTrans.setDayModel(isDayModel);
+		
+	}
+	public MultiPreSS(int segmentId,String stationId, String startTime, String endTime,
+			int isDayModel,int mode, int mod, int order){
+		this.segmentId = segmentId;
+		this.stationId = stationId;
+		this.startTime = startTime;
+		this.endTime = endTime;
+		this.mod = mod;
+		this.mode = mode;
+		this.order = order;
+		//super(stationId, startTime, endTime,mod);
+		multiTrans = new MultiTransitionSS(segmentId, stationId, startTime, endTime,isDayModel,mode, mod,order);
 		//multiTrans.setDayModel(isDayModel);
 		
 	}
@@ -183,7 +198,54 @@ public class MultiPreSS {
 		
 		return ((double)accurrate/(length-1));
 	}
-	
+	public double accN(String startTime, String endTime,int topN){
+		List<List<Integer>> array_relate = new ArrayList<List<Integer>>();
+		
+		List<Integer> array = new ArrayList<Integer>();
+		List<Integer> pre = new ArrayList<Integer>();
+		set_relate(array_relate, segmentId, stationId, startTime, endTime);
+
+		//array = GetIcArray.getIC_int(segmentId, stationId, startTime, endTime,mod);
+		SegmentStationSequence sequence  = new SegmentStationSequence();
+		if(isDayModel==0) array = sequence.findBydayProcess(segmentId, stationId, startTime, endTime, mod);
+		else array = sequence.findProcess(segmentId, stationId, startTime, endTime, mod);
+		int length = array.size();
+		
+		//System.out.println(length);
+		int accurrate=0;
+		double[][] result = new double[multiTrans.getClusterNum()][multiTrans.getStateSpace()];
+		int stateSpace = multiTrans.getStateSpace();
+		for(int  i =0 ;i< length-1; i++){
+		
+			
+			
+			for (int k = 0; k < order; k++) {
+
+				for (int j = 0; j < multiTrans.getClusterNum(); j++) {
+					if (j == 0)
+						result[0][array.get(i+k) / mode > stateSpace - 1 ? stateSpace - 1
+								: array.get(i+k) / mode] += multiTrans.getParaList().get(order - 1
+								- k);
+					else
+						result[j][array.get(i+k) / mode > stateSpace - 1 ? stateSpace - 1
+								: array.get(i+k) / mode] +=  multiTrans.getParaList().get(order - 1
+										- k);
+				}
+			}
+			
+			
+			
+			prediction(result);
+			List<Integer> pre_topN= ArrayHelper.getTopN(result[0], topN);
+			
+			if(ArrayHelper.isPredic(pre_topN, array.get(i+order), 1)){
+				accurrate+=1;
+			}
+		}
+		
+		
+		return ((double)accurrate/(length-1));
+	}
 	public double acc_Zeigen(String time1, String time2,int topN){
 		double [][][][] tensor = multiTrans.getTransition();
 		double[][] z_eigen = getZ(tensor, multiTrans.getStateSpace());

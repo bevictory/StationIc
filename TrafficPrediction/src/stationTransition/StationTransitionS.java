@@ -476,7 +476,7 @@ public class StationTransitionS {
 				//
 				
 				double [] result=predictionN(res,list_order,order);
-				List<Integer> pre_topN= ArrayHelper.getTopN(result, 2);
+				List<Integer> pre_topN= ArrayHelper.getTopN(result, 1);
 				//DealVector.print(result, lineTrans.getStateSpace());
 				//System.out.println("pre_topN "+pre_topN);
 				//System.out.println("actual "+array.get(i+1)/mode);
@@ -540,7 +540,6 @@ public class StationTransitionS {
 				setParaN(par,n, loc+1, sum- p,order);
 			}
 		}
-	
 	public static void main(String []args){
 		String startTime = "06:30:00", endTime = "10:00:00";
 		StationTransitionS stationTransitionS = new StationTransitionS("12111300000000045323", startTime, endTime, 2, 3, 30*60);

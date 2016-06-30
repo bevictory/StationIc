@@ -31,6 +31,22 @@ public static void reset(double [][][][] tensor_4order, int order,int n){
 		
 	
 	}
+
+public static void reset_array(double [][][][] tensor_4order, int arrayCluster,int n){
+	
+	
+	for(int i = 0; i < arrayCluster; i++){
+		for(int j = 0; j<arrayCluster; j++){
+			for(int k =0; k < n; k++){
+				for(int m =0;m<n ; m++){
+					 tensor_4order[i][j][k][m]=0;
+				}
+			}
+		}
+	}
+	
+
+}
 	public static double[][] multip_2order(double[][][][] tensor_4order, double [][] matrix, int cluster_num,int stateSpace){
 		double [][]result = new double[cluster_num][stateSpace];
 		for(int i= 0; i < cluster_num; i++){

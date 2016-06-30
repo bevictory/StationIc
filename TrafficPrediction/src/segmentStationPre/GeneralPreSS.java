@@ -278,8 +278,8 @@ public class GeneralPreSS {
 		return ((double)accurrate/(array.size()));
 	}
 	public static void test(){
-		String startTime = "06:30:00", endTime = "20:00:00";
-		String time1 =  "2015-12-11 06:30:00" ,time2 =  "2015-12-11 19:59:59";
+		String startTime = "06:30:00", endTime = "08:00:00";
+		String time1 =  "2015-12-11 06:30:00" ,time2 =  "2015-12-11 07:59:59";
 		GeneralPreSS generalPre  = new GeneralPreSS(35632502, "12111300000000045323", startTime, endTime,2,1, 10*60);
 		//generalPre.setMode(3);
 //		System.out.println(generalPre.acc(time1, time2));
@@ -295,8 +295,8 @@ public class GeneralPreSS {
 		System.out.println("prediction accurate:"+acc);
 	}
 	public static void testN(){
-		String startTime = "06:30:00", endTime = "20:00:00";
-		String time1 =  "2015-12-11 06:30:00" ,time2 =  "2015-12-11 19:59:59";
+		String startTime = "06:30:00", endTime = "08:00:00";
+		String time1 =  "2015-12-11 06:30:00" ,time2 =  "2015-12-11 07:59:59";
 		GeneralPreSS generalPre  = new GeneralPreSS(35632502, "12111300000000045323", 
 				startTime, endTime,2,1, 10*60,3);
 		//generalPre.setMode(3);
@@ -316,8 +316,8 @@ public class GeneralPreSS {
 	public static void main(String []args){
 		int segmentId = 35610028;
 		int sngSerialId = 4;
-		
 		test();
+		testN();
 		
 	}
 }

@@ -1,6 +1,7 @@
 package segmentStationTransition;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import com.mongodb.BasicDBObject;
@@ -16,11 +17,16 @@ import util.SegmentStationSequence;
 import util.SegmentStationTuple;
 import util.StationInfo;
 import util.tuple;
+import decomposition.DealVector;
 import decomposition.Matrix;
+import decomposition.Tensor_3order;
+import decomposition.Tensor_4order;
 
 public class MultiTransitionSS {
 	private List<List<Integer>> array_cluster = new ArrayList<List<Integer>>();
 	private double[][] para = null;
+	private double[][][]paraN =null;
+	private List<Double> paraList;
 	private double[][][][] transition=null;
 	private boolean isSetTrans = false;
 	private List<SegmentStationTuple> clusterList;
@@ -32,6 +38,11 @@ public class MultiTransitionSS {
 	private int isDayModel;
 	private int mod;
 	private List<Integer> array;
+	private int order=1;
+	private double[][][] tensor;
+	private double[][] transMatrix;
+	private int minDis;
+	private List<Double> minDisPara;
 	public int getStateSpace() {
 		return stateSpace;
 	}
@@ -60,6 +71,7 @@ public class MultiTransitionSS {
 		clusterList = new ArrayList<SegmentStationTuple>();
 		getCluster(segmentId, stationId, startTime, endTime);
 		setStateSpace(getMaxState(ArrayHelper.getMax(array))/mode+1);
+		transition  = new double[array_cluster.size()+1][array_cluster.size()+1][stateSpace][stateSpace];
 		setPara();
 		getTransition();
 		
@@ -155,8 +167,9 @@ public class MultiTransitionSS {
 	public double[][][][] getTransition(){
 		if(!isSetTrans){
 			//transition = new double[stateSpace][stateSpace][stateSpace][stateSpace];
-			transition  = new double[array_cluster.size()+1][array_cluster.size()+1][stateSpace][stateSpace];
-			toTransTensor(array);
+			
+			if (order==1)toTransTensor(array);
+			else  toTransTensorN(array, order);
 			isSetTrans = true;
 		}
 		
@@ -204,6 +217,282 @@ public class MultiTransitionSS {
 		}
 		return matrix;
 	}
+	
+	
+	//多步转移张量建立
+	
+	public MultiTransitionSS(int segmentId, String stationId, String startTime, String endTime,
+			int isDayModel,int mode,int mod,int order) {
+		// TODO Auto-generated constructor stub
+		this.isDayModel  = isDayModel;
+		this.mod = mod;
+		this.mode = mode;
+		this.order = order;
+		SegmentStationSequence sequence= new SegmentStationSequence();
+		
+		if(isDayModel==0) array = sequence.findBydayProcess(segmentId,stationId, startTime, endTime, mod);
+		else if(isDayModel==1) array = sequence.findProcess(segmentId,stationId, startTime, endTime, mod);
+		else array = sequence.findWorkDayProcess(segmentId, stationId, startTime, endTime, mod);
+		
+		
+		
+		clusterList = new ArrayList<SegmentStationTuple>();
+		getCluster(segmentId, stationId, startTime, endTime);
+		setStateSpace(getMaxState(ArrayHelper.getMax(array))/mode+1);
+		transition  = new double[array_cluster.size()+1][array_cluster.size()+1][stateSpace][stateSpace];
+		paraN = new double[order][getClusterNum()][getClusterNum()];
+		paraList = new ArrayList<Double>();
+		setParaProcess(order);
+		setParaProcessN(order);
+		getTransition();
+		
+	}
+	public void toTransTensorN(List<Integer> array,int order) {
+		Tensor_4order.reset_array(transition, array_cluster.size()+1, stateSpace);
+		while (order >= 1) {
+			
+			 Matrix.add(transition[0][0], toMatrix(array, array,
+						paraN[order - 1][0][0],order), stateSpace, paraList.get(order-1));
+			for (int i = 0; i < array_cluster.size(); i++) {
+//				transition[0][i + 1] = toMatrix(array, array_cluster.get(i),
+//						paraN[order - 1][0][i + 1]);
+//				transition[i + 1][0] = toMatrix(array_cluster.get(i), array,
+//						paraN[order - 1][i + 1][0],order);
+				
+				 Matrix.add(transition[0][i + 1] , toMatrix(array_cluster.get(i), array,
+					paraN[order - 1][0][i + 1],order), 
+						 stateSpace, paraList.get(order-1));
+				 Matrix.add(transition[i + 1][0], toMatrix(array_cluster.get(i), array,
+							paraN[order - 1][i + 1][0],order), 
+								 stateSpace, paraList.get(order-1));
+			}
+			for (int i = 0; i < array_cluster.size(); i++) {
+				for (int j = 0; j < array_cluster.size(); j++) {
+//					transition[i + 1][j + 1] = toMatrix(array_cluster.get(i),
+//							array_cluster.get(j),
+//							paraN[order - 1][i + 1][j + 1],order);
+					
+					Matrix.add(transition[i + 1][j+1], toMatrix(array_cluster.get(i),
+						array_cluster.get(j),paraN[order - 1][i + 1][j + 1],order),
+								 stateSpace, paraList.get(order-1));
+					
+					// Matrix.print(transition[i+1][j+1],
+					// Transition.getStateSpace());
+
+				}
+			}
+			
+			
+			order--;
+		}
+
+		
+	}
+	
+	public double[][] getTransition(int Sequenceloc, int order){
+		if(isSetTrans){
+			if(Sequenceloc==0) toTransTensor(array,Sequenceloc,order);
+			else {
+				toTransTensor(array_cluster.get(Sequenceloc-1),Sequenceloc,order);
+			}
+		} 
+		return transMatrix;
+	}
+	public void toTransTensor(List<Integer> array,int loc,int order) {
+		// TODO Auto-generated method stub
+		Matrix.reset(transMatrix, stateSpace);
+		Tensor_3order.reset(tensor, array_cluster.size()+1, stateSpace, stateSpace);
+		tensor[loc] = toMatrix(array, array,paraN[order-1][loc][0], order);
+		//Matrix.add(transMatrix, tensor[loc], stateSpace, paraN[order-1][loc][0]);
+		for(int i=0;i<array_cluster.size();i++){
+			tensor[i+1] = toMatrix(array, array_cluster.get(i),paraN[order-1][loc][i+1],order);
+			//Matrix.add(transMatrix, tensor[i+1], stateSpace, paraN[order-1][loc][i+1]);
+		}								
+		
+	}
+	public void setParaProcessN(int order){
+		minDis = Integer.MAX_VALUE;
+		double []par = new double [order];
+		System.out.println("setParaProcessN "+order);
+		setParaN(par, order, 0, 1,order);
+		paraList.clear();
+		paraList.addAll(minDisPara);
+	}
+	public  void setParaN(double []par,int n,int loc, double sum,int order){
+		if(loc ==n-1) {
+			System.out.println("setParaN "+n);
+			par[loc] = sum;
+			paraList.clear();
+			for(int i=0;i<n;i++)
+				paraList.add(par[i]);
+			//System.out.println(para);
+			//获得转移张量
+			getTransition();
+			int dis = getDisN(order);
+			isSetTrans=false;
+			//System.out.println(dis);
+			if(minDis> dis){
+				minDis = dis; 
+				minDisPara.clear();				
+				minDisPara.addAll(paraList);
+				//System.out.println(minDisPara);
+			}
+			return ;
+		}
+		for(double p=0.0;sum-p >10e-5; p+=0.01){
+			par[loc]=p;
+			setParaN(par,n, loc+1, sum- p,order);
+		}
+	}
+	
+	public void prediction(double [][]result){
+		result = Tensor_4order.multip_2order_formulti(transition,
+				result, getClusterNum(),stateSpace);
+		
+	}
+	public int getDisN(int order){
+		
+		
+		int length = array.size();
+		
+		//System.out.println(length);
+		int dis=0;
+		double[][] result = new double[getClusterNum()][stateSpace];
+		for(int  i =0 ;i< length-order; i++){
+
+//			
+			for (int k = 0; k < order; k++) {
+
+				for (int j = 0; j < getClusterNum(); j++) {
+					if (j == 0)
+						result[0][array.get(i+k) / mode > stateSpace - 1 ? stateSpace - 1
+								: array.get(i+k) / mode] += paraList.get(order - 1
+								- k);
+					else
+						result[j][array.get(i+k) / mode > stateSpace - 1 ? stateSpace - 1
+								: array.get(i+k) / mode] +=  paraList.get(order - 1
+										- k);
+				}
+			}
+			prediction(result);
+			List<Integer> pre_topN= ArrayHelper.getTopN(result[0], 1);
+			//DealVector.print(result, multiTrans.getStateSpace());
+			//System.out.println("pre_topN "+pre_topN);
+			//System.out.println("actual "+array.get(i+1)/mode);
+			dis+= ArrayHelper.getMinDis(pre_topN, stateSpace);
+		}
+		
+		
+		return dis;
+	}
+	
+	public List<Double> getParaList() {
+		return paraList;
+	}
+	public void setParaProcess(int order){
+		for(int i=1;i<=order;i++){
+			//for(int j= 0; j < array_cluster.size() +1;i++){
+				minDis = Integer.MAX_VALUE;
+				setPara(0, i);
+			//}
+		}
+	}
+	public void setPara(int sequenceLoc,int order){
+		int lenght = array_cluster.size();
+		tensor = new double[lenght+1][stateSpace][stateSpace];
+		setPara(paraN[order-1][sequenceLoc], array_cluster.size()+1, 0, 1, sequenceLoc, order);
+	}
+	public  void setPara(double []par,int n,int loc, double sum,int sequenceLoc,int order){
+		if(loc ==n-1) {
+			par[loc] = sum;
+			paraList.clear();
+			for(int i=0;i<n;i++)
+				paraList.add(par[i]);
+			//System.out.println(para);
+			getTransition(sequenceLoc,order);
+			int dis = getDis(sequenceLoc,order);
+			isSetTrans=false;
+			//System.out.println(dis);
+			if(minDis> dis){
+				minDis = dis; 
+				minDisPara.clear();				
+				minDisPara.addAll(paraList);
+				//System.out.println(minDisPara);
+			}
+			return ;
+		}
+		for(double p=0.0;sum-p >10e-5; p+=0.01){
+			par[loc]=p;
+			setPara(par,n, loc+1, sum- p,sequenceLoc,order);
+		}
+	}
+	public int  getDis(int sequenceLoc,int order){
+		int  dis =0;
+		List<Integer> array = sequenceLoc ==0?this.array:array_cluster.get(sequenceLoc-1);
+		int length = array.size();
+		
+		for(int  i =0 ;i< length-order; i++){
+			double[] res = new double[getStateSpace()];
+			List<Integer> list_cluter  = new ArrayList<Integer>();
+			list_cluter.add(this.array.get(i));
+			for(int j = 0; j < array_cluster.size(); j++){
+				list_cluter.add(array_cluster.get(j).get(i));
+			}
+			//System.out.println("pre state_r "+(int)state_r/mode+" "+array.get(i)/mode);
+			//
+			
+			double [] result=prediction(res,list_cluter,sequenceLoc,order);
+			List<Integer> pre_topN= ArrayHelper.getTopN(result,1);
+			//DealVector.print(result, lineTrans.getStateSpace());
+			//System.out.println("pre_topN "+pre_topN);
+			//System.out.println("actual "+array.get(i+1)/mode);
+			dis += ArrayHelper.getMinDis(pre_topN, array.get(i+order)/mode);
+		}
+		return dis ;
+	}
+	public double[] prediction(double [] result_,List<Integer> list, int sequenceLoc, int order) {
+		// TODO Auto-generated method stub
+		int stateSpace = getStateSpace();
+		double[] state = new double[stateSpace];		
+		double[][] matrix = getTransition(sequenceLoc, order);
+		for(int i=0;i<array_cluster.size()+1;i++){
+			DealVector.reset(state, stateSpace);
+			
+			
+			state[list.get(i)/mode>stateSpace-1?stateSpace-1:list.get(i)/mode] =1.0;
+			DealVector.add(result_, Matrix.multip_vector(tensor[i], state, stateSpace), stateSpace, paraN[order-1][sequenceLoc][i]);
+			
+			
+		}
+		//System.out.println(state_);
+		
+		//Matrix.transpose(matrix,stateSpace);
+		
+		return result_;
+	}
+	public double[][] toMatrix(List<Integer> array1, List<Integer> array2,double para,int order){
+		double[][] matrix  = new double [stateSpace][stateSpace];
+		int length = array1.size()> array2.size()? array2.size():array1.size();
+		double sum[] = new double[stateSpace];
+		for(int i = 0; i < length-order ; i ++){
+			sum[array1.get(i)/mode]+=1;
+			matrix[array1.get(i)/mode][array2.get(i+order)/mode] +=1;
+		}
+		for(int i = 0; i < stateSpace ; i ++){
+			for(int j = 0 ;j< stateSpace; j++){
+				if(sum[i] > 0){
+					matrix[i][j] /= sum[i];
+					matrix[i][j] *= para;
+				}else {
+					matrix[i][j] = para /stateSpace;
+				}
+			
+			}
+			
+		}
+		return matrix;
+	}
+	
 	public static void main(String []args){
 		int segmentId = 35610028;
 		int sngSerialId = 3;

@@ -43,6 +43,11 @@ public class DealVector {
 			v[i]+=delta[i];
 		}
 	}
+	public static void add(double[] v,double[] v1 ,int n,double para){
+		for(int i=0;i<n;i++){
+			v[i]+=v1[i]*para;
+		}
+	}
 	public static double norm_2(double[] v,double[] z ,int n){
 		double result=0;
 		for(int i=0;i<n;i++){
@@ -100,6 +105,13 @@ public class DealVector {
 			System.out.println();
 		}
 		System.out.println(sum);
+	}
+	public static void reset(double [] v, int n){
+	
+		for(int i=0;i<n;i++){ 
+			v[i]=0;
+		}
+	
 	}
 
 }
