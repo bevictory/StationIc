@@ -120,26 +120,31 @@ public class GeneralPreSS {
 		
 		if(isDayModel==0) array = sequence.findBydayProcess(segmentId, stationId, time1, time2, mod);
 		else array = sequence.findProcess(segmentId, stationId, time1, time2, mod);
-		
+		System.out.println(array.subList(3, array.size()));
 		//generalTrans.getTransiton(segmentId,stationId, startTime, endTime, mod);
 		//double[] res = generalTrans.getInitState();
 		//DealVector.print(res, generalTrans.getStateSpace());
 		//System.out.println("need pre "+array.size());
 		//System.out.println(array);
 		int accurrate=0;
+		List<Integer> preList  = new ArrayList<Integer>();
 		for( int i =2 ;i < array.size()-1; i++){
 			double[] res =null;
 			//pre.add(prediction(res, array.get(i)/mode));
+			//DealVector.sum(prediction(res, array.get(i)), generalTrans.getStateSpace());
 			List<Integer> pre_topN=ArrayHelper.getTopN(prediction(res, array.get(i)), topN);
+			//System.out.println("top "+pre_topN);
 			//System.out.println("pre_topN "+pre_topN);
 			//System.out.println("actual "+array.get(i)/mode);
 //			if(pre_topN.contains(array.get(i+1)/mode)){
 //				accurrate+=1;
 //			}
+			preList.add(ArrayHelper.getMinDisState(pre_topN, array.get(i+1)/mode)*mode);
 			if(ArrayHelper.isPredic(pre_topN, array.get(i+1)/mode, ArrayHelper.pre)){
 				accurrate+=1;
 			}
 		}
+		System.out.println(preList);
 		System.out.println("accurrate "+accurrate);
 //		System.out.println("pre "+pre.size());
 //		System.out.println(pre);
@@ -152,30 +157,7 @@ public class GeneralPreSS {
 		//System.out.println(pre);
 		return ((double)accurrate/(array.size()-3));
 	}
-	public double   acc_top2(String time1, String time2){
-		
-		ArrayList<ArrayList<Integer>> pre = new ArrayList<ArrayList<Integer>>();
-		List<Integer> array = new ArrayList<Integer>();
-		
-		SegmentStationSequence sequence = new SegmentStationSequence();
-		generalTrans.getTransiton();
-		if(isDayModel==0) array = sequence.findBydayProcess(segmentId, stationId, time1, time2, mod);
-		else array = sequence.findProcess(segmentId, stationId,  time1, time2, mod);
-		System.out.println(array);
-		//double[] res = generalTrans.getInitState();
-		for( int i =0 ;i < array.size()-1; i++){
-			double[] res = new double[generalTrans.getStateSpace()];
-			pre.add(prediction_top2(res, array.get(i)/mode));
-		}
-		int accurrate=0;
-		for(int  i =0 ;i< array.size()-1; i++){
-			if(pre.get(i).contains(Integer.valueOf(array.get(i+1)/mode))){
-				accurrate+=1;
-			}
-		}
-		System.out.println(pre);
-		return ((double)accurrate/(array.size()-1));
-	}
+	
 	/**
 	 * zÌØÕ÷ÖµÔ¤²â
 	 * @param time1
@@ -186,7 +168,7 @@ public class GeneralPreSS {
 	public double acc_Zeigen(String time1, String time2,int topN){
 		double [][] matrix = generalTrans.getTransiton();
 		double[] z_eigen = getZ(matrix, generalTrans.getStateSpace());
-		//DealVector.print(z_eigen, generalTrans.getStateSpace());
+		DealVector.print(z_eigen, generalTrans.getStateSpace());
 		SegmentStationSequence sequence = new SegmentStationSequence();
 		List<Integer> array=sequence.findProcess(segmentId,stationId, time1, time2, 10*60);
 		int accurrate=0;
@@ -234,10 +216,12 @@ public class GeneralPreSS {
 		
 		if(isDayModel==0) array = sequence.findBydayProcess(segmentId, stationId, time1, time2, mod);
 		else array = sequence.findProcess(segmentId, stationId, time1, time2, mod);
-				
+		System.out.println(array.subList(order, array.size()));	
+		//System.out.println(array);
 		int accurrate=0;
+		List<Integer> preList = new ArrayList<Integer>();
 		for( int i =0 ;i < array.size()-order; i++){			
-			
+			//System.out.println(array.get(i+order));
 			double[] res = null;
 			List<Integer> list_order  = new ArrayList<Integer>();
 			for(int j = 0; j < order; j++){
@@ -247,16 +231,18 @@ public class GeneralPreSS {
 			//
 			
 			double [] result=predictionN(res,list_order);
+			//DealVector.sum(result, generalTrans.getStateSpace());
 			List<Integer> pre_topN= ArrayHelper.getTopN(result, topN);
 			//DealVector.print(result, lineTrans.getStateSpace());
-			//System.out.println("pre_topN "+pre_topN);
+			System.out.println("pre_topN "+pre_topN);
 			//System.out.println("actual "+array.get(i+1)/mode);
-		
+			preList.add(ArrayHelper.getMinDisState(pre_topN, array.get(i+order)/mode));
 			if(ArrayHelper.isPredic(pre_topN, array.get(i+order)/mode, ArrayHelper.pre)){
 				accurrate+=1;
 			}
 			
 		}
+		System.out.println(preList);
 		System.out.println("accurrate "+accurrate);
 		return ((double)accurrate/(array.size()-order));
 	}
@@ -269,6 +255,7 @@ public class GeneralPreSS {
 		List<Integer> array=sequence.findProcess(segmentId,stationId, time1, time2,10*60);
 		int accurrate=0;
 		List<Integer> topN_result=ArrayHelper.getTopN(z_eigen, topN);
+		
 		for(int  i =0 ;i< array.size()-1; i++){
 			if(ArrayHelper.isPredic(topN_result, array.get(i)/mode, ArrayHelper.pre)){
 				accurrate+=1;
@@ -278,9 +265,9 @@ public class GeneralPreSS {
 		return ((double)accurrate/(array.size()));
 	}
 	public static void test(){
-		String startTime = "06:30:00", endTime = "08:00:00";
-		String time1 =  "2015-12-11 06:30:00" ,time2 =  "2015-12-11 07:59:59";
-		GeneralPreSS generalPre  = new GeneralPreSS(35632502, "12111300000000045323", startTime, endTime,2,1, 10*60);
+		String startTime = "06:30:00", endTime = "18:59:59";
+		String time1 =  "2015-12-10 06:30:00" ,time2 =  "2015-12-10 18:59:59";
+		GeneralPreSS generalPre  = new GeneralPreSS(35632502, "12111300000000045323", startTime, endTime,2,4, 15*60);
 		//generalPre.setMode(3);
 //		System.out.println(generalPre.acc(time1, time2));
 		double[][]matrix =generalPre.generalTrans.getTransiton();
@@ -288,16 +275,18 @@ public class GeneralPreSS {
 		//DealVector.print(generalPre.getZ(matrix, generalPre.generalTrans.getStateSpace()),generalPre.generalTrans.getStateSpace());
 		SegmentStationSequence sequence = new SegmentStationSequence();
 		//System.out.println(sequence.findProcess(35621447,"12111300000000045252", time1, time2, 30*60));
-		double acc_e=generalPre.acc_Zeigen(time1, time2,1);
+		
 		double acc=generalPre.acc(time1, time2, 1);
+		double acc_e=generalPre.acc_Zeigen(time1, time2,1);
 		System.out.println(generalPre.generalTrans.getStateSpace());
 		System.out.println(acc_e);
 		System.out.println("prediction accurate:"+acc);
+		//Matrix.print(generalPre.generalTrans.getTransiton(), generalPre.generalTrans.getStateSpace());
 	}
 	public static void testN(){
-		String startTime = "06:30:00", endTime = "08:00:00";
-		String time1 =  "2015-12-11 06:30:00" ,time2 =  "2015-12-11 07:59:59";
-		GeneralPreSS generalPre  = new GeneralPreSS(35632502, "12111300000000045323", 
+		String startTime = "06:30:00", endTime = "08:59:59";
+		String time1 =  "2015-12-10 06:30:00" ,time2 =  "2015-12-11 08:59:59";
+		GeneralPreSS generalPre  = new GeneralPreSS(35557702, "12111300000000045391", 
 				startTime, endTime,2,1, 10*60,3);
 		//generalPre.setMode(3);
 //		System.out.println(generalPre.acc(time1, time2));
@@ -306,8 +295,9 @@ public class GeneralPreSS {
 		//DealVector.print(generalPre.getZ(matrix, generalPre.generalTrans.getStateSpace()),generalPre.generalTrans.getStateSpace());
 		SegmentStationSequence sequence = new SegmentStationSequence();
 		//System.out.println(sequence.findProcess(35621447,"12111300000000045252", time1, time2, 30*60));
-		double acc_e=generalPre.acc_ZeigenN(time1, time2,2);
-		double acc=generalPre.accN(time1, time2, 2);
+		
+		double acc=generalPre.accN(time1, time2, 1);
+		double acc_e=generalPre.acc_ZeigenN(time1, time2,1);
 		System.out.println(generalPre.generalTrans.getPara());
 		System.out.println(generalPre.generalTrans.getStateSpace());
 		System.out.println(acc_e);
@@ -316,8 +306,9 @@ public class GeneralPreSS {
 	public static void main(String []args){
 		int segmentId = 35610028;
 		int sngSerialId = 4;
+		//testN();
 		test();
-		testN();
+		
 		
 	}
 }

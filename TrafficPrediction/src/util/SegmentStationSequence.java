@@ -138,12 +138,13 @@ public class SegmentStationSequence {
 	@SuppressWarnings("unchecked")
 	public List<Integer> segmentIc(List<BasicDBObject> list,int mod){
 		List<Integer> result = new ArrayList<Integer>();
+		if(list==null) return null;
 		List<Integer> icList = (List<Integer>) list.get(0).get("trafficList");
 		List<Integer> timeList = (List<Integer>) list.get(0).get("timeList");
 		String startTime = list.get(0).getString("startTime");
 		String endTime = list.get(0).getString("endTime");
 		int j=0,sum=0;
-		
+		if(icList==null) return null;
 		for(int i=0;i<timeList.size();i++){
 			if(timeList.get(i)/mod ==j){
 				sum+=icList.get(i);
@@ -243,7 +244,7 @@ public class SegmentStationSequence {
 								
 		}
 		if(find(segmentId, stationId, "2015-11-16 "+s, "2015-11-16 "+e)==null)
-			return false;;
+			return false;
 		
 		startTime = "2015-12-07 "+s;
 		 endTime = "2015-12-10 "+e;
@@ -423,7 +424,9 @@ public class SegmentStationSequence {
 				start = Time.addHours(start, 24);
 				end = Time.addHours(end, 24);
 			}
-			segmentIc.addAll(segmentIc(find(segmentId,stationId, start, end),mod));
+			
+			List<Integer> segmentResult =segmentIc(find(segmentId,stationId, start, end),mod);
+			if(segmentResult!=null) segmentIc.addAll(segmentResult);
 //			System.out.println(segmentId);
 //			System.out.println(start);
 			//System.out.println(start);
@@ -605,7 +608,18 @@ public class SegmentStationSequence {
 		
 	}
 	
-	
+	public static List<Double> divide(List<Integer> list,int mode){
+		double []p =new double[ArrayHelper.getMax(list)/mode+1];
+		for(int i=0;i<list.size();i++){
+			p[list.get(i)/mode]+=1;
+		}
+		List<Double> result = new ArrayList<Double>();
+		for(int i=0;i<p.length;i++){
+			p[i]/=list.size();
+			result.add(p[i]*100);
+		}
+		return result;
+	}
 	public static void main(String []args){
 //		SegmentStation  segmentStation = new SegmentStation();
 //		segmentStation.getSegmentSta();
@@ -629,9 +643,9 @@ public class SegmentStationSequence {
 		int segmentId=35632502;
 		String stationId="12111300000000045323";
 		SegmentStationSequence sequence = new SegmentStationSequence();
-		System.out.println(sequence.getStartEndTime(segmentId, stationId, 10*60));
-//		String start ="06:30:00", end ="20:00:00";
-//		String startTime = "2015-12-08 06:30:00", endTime = "2015-12-08 20:00:00";
+		//System.out.println(sequence.getStartEndTime(segmentId, stationId, 10*60));
+		String start ="06:30:00", end ="18:59:59";
+		String startTime = "2015-12-09 06:30:00", endTime = "2015-12-09 18:59:59";
 //		SegmentStationSequence sequence = new SegmentStationSequence();
 //		List<Integer> list=sequence.findProcess(segmentId, stationId,startTime , endTime,  30*60);
 //		sequence.saveToFile("Array", list);
@@ -645,8 +659,10 @@ public class SegmentStationSequence {
 //		list=sequence.findAllDayProcess(segmentId, stationId, start, end,  60*60);
 //		sequence.saveToFile("icArray12_60", list);
 //		System.out.println(list);
-		//		sequence.findProcess(35633102, "12111300000000045252", startTime, endTime,10*60);
-//		//sequence.segmentIc(sequence.find(35633102, "12111300000000045252", startTime, endTime), 10*60);
+		//		sequence.findProcess(35633102, "12111300000000045252", startTime, endTime,10*60);35616250, 35647249
+		List<Integer> list=sequence.findWorkDayProcess(35647249, "12111300000000045323", start, end, 15*60);
+		System.out.println(list);
+		System.out.println(divide(list, 1));
 	}
 	
 }

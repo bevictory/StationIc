@@ -7,6 +7,7 @@ import java.util.concurrent.ThreadPoolExecutor.DiscardOldestPolicy;
 
 import org.bson.types.MaxKey;
 
+import decomposition.DealVector;
 import decomposition.Matrix;
 import decomposition.Tensor_3order;
 import decomposition.Tensor_4order;
@@ -30,7 +31,7 @@ public class LineTransitionSS {
 	private int mode =1;
 	private int mod;
 	private int  isDayModel =0;
-	
+	private int setParaTopN =1;
 	private int minDis = Integer.MAX_VALUE;
 	private List<Double> minDisPara=new ArrayList<Double>();
 	private double[][][][] tensor;
@@ -72,8 +73,8 @@ public class LineTransitionSS {
 		set_arrayRelate(segmentId, stationId, startTime, endTime);
 		setStateSpace(getMaxState(ArrayHelper.getMax(array))/mode+1);
 		transTensor = new double[stateSpace][stateSpace][stateSpace];	
-		set_para(array);
-		//setParaProcess();
+		//set_para(array);
+		setParaProcess();
 	}
 	
 	public double[][][] getTransiton(){
@@ -119,7 +120,7 @@ public class LineTransitionSS {
 					// else tranMatrix[i][i] =1;
 					else {
 						//transTensor[i][j][k] = 1.0 / ( stateSpace);
-						transTensor[i][j][j] = 2.0;
+						transTensor[i][j][k] = 1.0 / ( stateSpace);
 					}
 				}
 
@@ -144,13 +145,15 @@ public class LineTransitionSS {
 		for(int i=0;i<length;i++){
 			if(isDayModel==1&&!sequence.hasData(lineList.get(i), stationId, startTime, endTime, mod)) continue;
 			if(isDayModel==2&&!sequence.hasWorkdayData(lineList.get(i), stationId, startTime, endTime, mod)) continue;
-			if(++num >4) break;
+			
 			List<Integer> array;
 			relate_segment.add(lineList.get(i));
 			if(isDayModel==0) array= sequence.findBydayProcess(lineList.get(i),stationId, startTime, endTime, mod);
 			else if(isDayModel==1)array= sequence.findProcess(lineList.get(i),stationId, startTime, endTime, mod);
 			else array=sequence.findWorkDayProcess(lineList.get(i), stationId, startTime, endTime, mod);
 			array_relate.add(array);
+			num++;
+			if(num>=2) break;
 		}
 		//System.out.println("array_relate size "+array_relate.size());
 		
@@ -173,7 +176,7 @@ public class LineTransitionSS {
 	}
 	public void setParaProcess(){
 		if(array_relate.size() ==0) return;
-		System.out.println(array_relate.size() );
+		//System.out.println(array_relate.size() );
 		double []par = new double [array_relate.size()];
 		setPara(par, array_relate.size(), 0, 1);
 		para.clear();
@@ -193,7 +196,7 @@ public class LineTransitionSS {
 			//
 			
 			double [] result=prediction(res,(int)state_r, array.get(i));
-			List<Integer> pre_topN= ArrayHelper.getTopN(result, 1);
+			List<Integer> pre_topN= ArrayHelper.getTopN(result, setParaTopN);
 			//DealVector.print(result, lineTrans.getStateSpace());
 			//System.out.println("pre_topN "+pre_topN);
 			//System.out.println("actual "+array.get(i+1)/mode);
@@ -238,7 +241,7 @@ public class LineTransitionSS {
 		}
 		for(double p=0.0;sum-p >10e-5; p+=0.01){
 			par[loc]=p;
-			setPara(par,n, loc+1, sum- p,order);
+			setPara(par,n, loc+1, sum- p);
 		}
 	}
 	public List<Integer> getRelate_segment() {
@@ -275,7 +278,7 @@ public class LineTransitionSS {
 		transTensor = new double[stateSpace][stateSpace][stateSpace];
 		tensor = new double [order][stateSpace][stateSpace][stateSpace];
 		paraN = new double[order][array_relate.size()];
-		System.out.println( "order "+order);
+		//System.out.println( "order "+order);
 		setParaProcessN(order);
 	}
 	public double[][][] getTransiton(int order){
@@ -318,17 +321,18 @@ public class LineTransitionSS {
 					
 					// else tranMatrix[i][i] =1;
 					else {
-						//transTensor[i][j][k] = 1.0 / ( stateSpace);
-						transTensor[i][j][j] = 2.0;
+						transTensor[i][j][k] = 1.0 / ( stateSpace);
+						//transTensor[i][j][j] = 2.0;
 					}
 				}
 
 			}
 		}
 	}
+	//paraN[order][i]order 下第i个相关的加权
 	public void setParaProcess(int order){
 		if(array_relate.size() ==0) return;
-		System.out.println(array_relate.size() );
+		//System.out.println(array_relate.size() );
 		minDis = Integer.MAX_VALUE;
 		setPara(paraN[order-1], array_relate.size(), 0, 1,order);
 		for(int i=0 ;i< array_relate.size();i++){
@@ -349,7 +353,7 @@ public class LineTransitionSS {
 			//
 			
 			double [] result=prediction(res,(int)state_r, array.get(i));
-			List<Integer> pre_topN= ArrayHelper.getTopN(result, 1);
+			List<Integer> pre_topN= ArrayHelper.getTopN(result, setParaTopN);
 			//DealVector.print(result, lineTrans.getStateSpace());
 			//System.out.println("pre_topN "+pre_topN);
 			//System.out.println("actual "+array.get(i+1)/mode);
@@ -394,7 +398,7 @@ public class LineTransitionSS {
 		}
 		for(double p=0.0;sum-p >10e-5; p+=0.01){
 			par[loc]=p;
-			setPara(par,n, loc+1, sum- p);
+			setPara(par,n, loc+1, sum- p,order);
 		}
 	}
 	
@@ -434,8 +438,8 @@ public class LineTransitionSS {
 						
 						// else tranMatrix[i][i] =1;
 						else {
-							//transTensor[i][j][k] = 1.0 / ( stateSpace);
-							tensor[order-1][i][j][j] = 2.0;
+							tensor[order-1][i][j][k] = 1.0 / ( stateSpace);
+							//tensor[order-1][i][j][j] = 2.0;
 						}
 					}
 
@@ -452,16 +456,19 @@ public class LineTransitionSS {
 		if(array_relate.size() ==0) return;
 		
 		for(int i=1 ;i<= order;i++){
-			setParaProcess(order);
+			setParaProcess(i);
 		}
+		Matrix.print(paraN, order, array_relate.size());
 		minDis = Integer.MAX_VALUE;
 		double []par = new double [order];
-		System.out.println("setParaProcessN "+order);
+		//System.out.println("setParaProcessN "+order);
 		setParaN(par, order, 0, 1,order);
 		para.clear();
-		
+//		para.add(0.8);
+//		para.add(0.1);
+//		para.add(.1);
 		para.addAll(minDisPara);
-		System.out.println("para size "+para.size());
+		//System.out.println("para size "+para.size());
 	}
 	public int  getDisN(int order){
 		int  dis =0;
@@ -486,7 +493,7 @@ public class LineTransitionSS {
 			//
 			
 			double [] result=predictionN(res,list_order,order);
-			List<Integer> pre_topN= ArrayHelper.getTopN(result, 1);
+			List<Integer> pre_topN= ArrayHelper.getTopN(result, setParaTopN);
 			//DealVector.print(result, lineTrans.getStateSpace());
 			//System.out.println("pre_topN "+pre_topN);
 			//System.out.println("actual "+array.get(i+1)/mode);
@@ -519,6 +526,7 @@ public class LineTransitionSS {
 			multi[row][col] += para.get(order-1-i);
 		}
 		result_ = Tensor_3order.orderMulti_two(transTensor, multi, stateSpace);
+		//DealVector.sum(result_, stateSpace);
  		return result_;
 	}
 	public double[][] getParaN() {
@@ -526,18 +534,21 @@ public class LineTransitionSS {
 	}
 	public  void setParaN(double []par,int n,int loc, double sum,int order){
 		if(loc ==n-1) {
-			System.out.println("setParaN "+n);
+			//System.out.println("setParaN "+n);
 			par[loc] = sum;
 			para.clear();
 			for(int i=0;i<n;i++)
 				para.add(par[i]);
-			//System.out.println(para);
+			
 			//获得转移张量
 			getTransiton();
 			int dis = getDisN(order);
 			isSetTrans=false;
-			//System.out.println(dis);
+			
 			if(minDis> dis){
+				System.out.println("para "+para);
+			System.out.println("dis "+dis);
+			System.out.println("minDis "+minDis);
 				minDis = dis; 
 				minDisPara.clear();				
 				minDisPara.addAll(para);

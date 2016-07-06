@@ -44,15 +44,36 @@ public class ArrayHelper {
 	}
 	public static int getMinDis(List<Integer> array , int state){
 		int min =Integer.MAX_VALUE;
+		//boolean isNegative =false;
 		for(int i=0;i<array.size();i++){
 			min = Math.min(Math.abs(state-array.get(i)), min);
+//			if(Math.abs(state-array.get(i)) <min){
+//				min = Math.abs(state-array.get(i));
+//				if(state <array.get(i)) isNegative = true;
+//				else isNegative = false;
+//			}
 		}
-		return min;
+		  return min;
+	}
+	
+	public static int getMinDisState(List<Integer> array , int state){
+		int min =Integer.MAX_VALUE;
+		//boolean isNegative =false;
+		int loc =0;
+		for(int i=0;i<array.size();i++){
+//			min = Math.min(Math.abs(state-array.get(i)), min);
+			if(Math.abs(state-array.get(i)) <min){
+				min = Math.abs(state-array.get(i));
+				loc = array.get(i);
+			}
+		}
+		  return loc;
 	}
 	public static boolean isPredic(List<Integer> list, int prediction,int mode){
 		
 		for(int i =-mode;i<=mode;i++){
 			if(list.contains(prediction+i)){
+				//System.out.print((prediction+i)+" ");
 				return true;
 			}
 		}

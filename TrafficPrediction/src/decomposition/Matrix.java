@@ -65,6 +65,18 @@ public class Matrix {
 		}
 		return result;
 	}
+	
+	public static double[] order_vector(double [][]matrix ,double [] v,int n){
+		double[] result = new double[n]; 
+		for(int i=0; i < n; i ++){
+			for( int j=0;j<n;j++){
+				result[j]+=(matrix[i][j]*v[i]);
+				
+			}
+		}
+		
+		return result;
+	}
 	public static double [][]  init(int n,int m){
 		double [][]result = new double[n][m];
 		for(int i = 0; i < n; i++){
@@ -99,6 +111,13 @@ public class Matrix {
 			}
 		}
 	}
+	public static void reset(double[][] z,int n,int m){
+		for(int i = 0; i < n; i++){
+			for(int j=0;j<m;j++){
+				z[i][j]=0;
+			}
+		}
+	}
 	/**
 	 * ¾ØÕó´òÓ¡
 	 * @param matrix
@@ -114,5 +133,14 @@ public class Matrix {
 			System.out.println();
 		}
 	}
-
+	public static void print(double [][] matrix,int n,int m){
+		for(int i=0;i<n;i++){
+			for(int j=0;j<m;j++){
+				
+				System.out.printf("%.4f",matrix[i][j]);
+				System.out.print(" ");
+			}
+			System.out.println();
+		}
+	}
 }

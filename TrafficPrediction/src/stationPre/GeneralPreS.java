@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
+import com.mongodb.BasicDBObject;
+
 import mongodb.GetIcArray;
 
 
@@ -13,6 +15,8 @@ import stationTransition.GeneralTransition;
 import transition.Transition;
 import util.ArrayHelper;
 import util.SegmentStationSequence;
+import util.Station;
+import util.StationInfo;
 import util.StationSequence;
 import decomposition.DealVector;
 import decomposition.GeneralPower;
@@ -64,7 +68,7 @@ public GeneralPreS(String stationId, String startTime, String endTime,int isDayM
 		this.order = order;
 		this.isDayModel = isDayModel;
 		//super(stationId, startTime, endTime,mod);
-		generalTrans = new GeneralTransition(stationId, startTime, endTime,isDayModel, mode, mod);
+		generalTrans = new GeneralTransition(stationId, startTime, endTime,isDayModel, mode, mod,order);
 		
 		
 	}
@@ -113,18 +117,21 @@ public GeneralPreS(String stationId, String startTime, String endTime,int isDayM
 		//double[] res = generalTrans.getInitState();
 		//DealVector.print(res, generalTrans.getStateSpace());
 		//System.out.println("need pre "+array.size());
-		//System.out.println(array);
+		System.out.println(array.subList(3, array.size()));
+		List<Integer> preList = new ArrayList<Integer>();
 		int accurrate=0;
-		for( int i =0 ;i < array.size()-1; i++){
+		for( int i =2 ;i < array.size()-1; i++){
 			double[] res =null;
 			//pre.add(prediction(res, array.get(i)/mode));
 			List<Integer> pre_topN=ArrayHelper.getTopN(prediction(res, array.get(i)), topN);
 			//System.out.println("pre_topN "+pre_topN);
 			//System.out.println("actual "+array.get(i)/mode);
-			if(pre_topN.contains(array.get(i+1)/mode)){
+			preList.add(ArrayHelper.getMinDisState(pre_topN, array.get(i+1)/mode)*mode);
+			if(ArrayHelper.isPredic(pre_topN, array.get(i+1)/mode, ArrayHelper.pre)){
 				accurrate+=1;
 			}
 		}
+		System.out.println(preList);
 //		System.out.println("pre "+pre.size());
 //		System.out.println(pre);
 //		
@@ -134,7 +141,7 @@ public GeneralPreS(String stationId, String startTime, String endTime,int isDayM
 //			}
 //		}
 		//System.out.println(pre);
-		return ((double)accurrate/(array.size()-1));
+		return ((double)accurrate/(array.size()-3));
 	}
 	
 	/**
@@ -147,6 +154,7 @@ public GeneralPreS(String stationId, String startTime, String endTime,int isDayM
 	public double acc_Zeigen(String time1, String time2,int topN){
 		double [][] matrix = generalTrans.getTransiton();
 		double[] z_eigen = getZ(matrix, generalTrans.getStateSpace());
+		DealVector.print(z_eigen, generalTrans.getStateSpace());
 		StationSequence sequence = new StationSequence();
 		List<Integer> array=sequence.findProcess(stationId, time1, time2, mod);
 		int accurrate=0;
@@ -234,22 +242,83 @@ public GeneralPreS(String stationId, String startTime, String endTime,int isDayM
 		return ((double)accurrate/(array.size()));
 	}
 	
-	
-	public static void main(String []args){
-		int segmentId = 35610028;
-		int sngSerialId = 4;
-		
-		String startTime = "06:30:00", endTime = "10:00:00";
-		String time1 =  "2015-12-11 06:30:00" ,time2 =  "2015-12-11 09:59:59";
-		GeneralPreS generalPre  = new GeneralPreS( "12111300000000045323", startTime, endTime,2,6, 30*60);
+	public static void test(){
+		String startTime = "06:30:00", endTime = "18:59:59";
+		String time1 =  "2015-12-13 06:30:00" ,time2 =  "2015-12-13 18:59:59";
+		GeneralPreS generalPre  = new GeneralPreS( "12111300000000045323", startTime, endTime,2,6, 10*60);
 		//generalPre.setMode(3);
 //		System.out.println(generalPre.acc(time1, time2));
 		double[][]matrix =generalPre.generalTrans.getTransiton();
-		System.out.println("get matrix");
+		
 		//DealVector.print(generalPre.getZ(matrix, generalPre.generalTrans.getStateSpace()),generalPre.generalTrans.getStateSpace());
 		//SegmentStationSequence sequence = new SegmentStationSequence();
 		//System.out.println(sequence.findProcess(35621447,"12111300000000045252", time1, time2, 30*60));
-		System.out.println(generalPre.acc_Zeigen(time1, time2,2));
-		System.out.println(generalPre.acc(time1, time2, 2));
+		
+		double acc=generalPre.acc(time1, time2, 1);
+		double acc_e=generalPre.acc_Zeigen(time1, time2,1);
+		System.out.println(generalPre.generalTrans.getStateSpace());
+		System.out.println(acc_e);
+		System.out.println("prediction accurate:"+acc);
+		//Matrix.print(generalPre.generalTrans.getTransiton(), generalPre.generalTrans.getStateSpace());
+	}
+	public static void testN(){
+		String startTime = "06:30:00", endTime = "08:59:59";
+		String time1 =  "2015-12-10 06:30:00" ,time2 =  "2015-12-11 08:59:59";
+		GeneralPreS generalPre  = new GeneralPreS( "12111300000000045323", 
+				startTime, endTime,2,1, 10*60,3);
+		//generalPre.setMode(3);
+//		System.out.println(generalPre.acc(time1, time2));
+		double[][]matrix =generalPre.generalTrans.getTransiton();
+		
+		//DealVector.print(generalPre.getZ(matrix, generalPre.generalTrans.getStateSpace()),generalPre.generalTrans.getStateSpace());
+		//SegmentStationSequence sequence = new SegmentStationSequence();
+		//System.out.println(sequence.findProcess(35621447,"12111300000000045252", time1, time2, 30*60));
+		
+		double acc=generalPre.accN(time1, time2, 2);
+		double acc_e=generalPre.acc_ZeigenN(time1, time2,2);
+		System.out.println(generalPre.generalTrans.getPara());
+		System.out.println(generalPre.generalTrans.getStateSpace());
+		System.out.println(acc_e);
+		System.out.println("prediction accurate:"+acc);
+	}
+	
+	public static void test_gene(){
+		String startTime = "15:30:00", endTime = "18:59:59";
+		String time1 =  "2015-12-10 15:30:00" ,time2 =  "2015-12-11 18:59:59";
+//		MultiPreSS multiPreSS  = 
+//				new MultiPreSS(35632502, "12111300000000045323", startTime, endTime,2,5, 30*60);
+		
+		
+		Station station = new Station();
+		StationSequence sequence = new StationSequence();
+		List<BasicDBObject> list=Station.getStaFromAnaly();
+		
+	
+		
+		
+		for(int i =0;i<100;i++){
+			System.out.println("i "+i);
+			String sta =list.get(i).getString("stationId");
+			if(!sequence.hasWorkdayData( sta, startTime, endTime, 10*60)) continue;
+			if(StationInfo.getNear(sta, 1, 200).size() ==0) continue;
+			
+			GeneralPreS generalPreSS =  new GeneralPreS( sta, startTime, endTime,2,1, 10*60);
+			
+			//double multi_zAcc = multiPreSS.acc_Zeigen(time1, time2, 2);
+			//double gene_zAcc = generalPreSS.acc_Zeigen(time1, time2, 2);
+			double GeneAcc = generalPreSS.acc(time1, time2, 2);
+			System.out.println(" gene "+GeneAcc);
+			//list.get(i).append("MultiAcc", multiAcc);
+			//list.get(i).append("multi_zAcc", multi_zAcc);
+			//list.get(i).append("GeneAcc", GeneAcc);
+			//list.get(i).append("Gene_zAcc", gene_zAcc);
+			//MongoDBAssis.getDb().getCollection("segStaMultiPre_mode5_mod30_ouji").insert(list.get(i));
+			//System.out.println(list.get(i));
+		}
+	}
+	public static void main(String []args){
+		int segmentId = 35610028;
+		int sngSerialId = 4;
+		test();
 	}
 }

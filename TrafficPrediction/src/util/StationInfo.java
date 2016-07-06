@@ -12,7 +12,7 @@ import mongodb.QueryBls;
 
 public class StationInfo {
 	@SuppressWarnings("unchecked")
-	public static List<BasicDBObject> getNear(String stationId,int minDis,int maxDis){
+	public static List<BasicDBObject> getNear(String stationId,int minDis,int maxDis ){
 		DB db = MongoDBAssis.getDb();
 		ArrayList<Double> coordinate;
 		DBCursor cursor =db.getCollection("StationInfo").find(new BasicDBObject("stationId",stationId));

@@ -43,6 +43,7 @@ public class StationPreS {
 	private int mod;
 	private double[] result ;
 	private int mode =1;
+	private int order;
 	public void setMode(int mode) {
 		this.mode = mode;
 		this.stationTrans.setMode(mode);
@@ -74,9 +75,24 @@ public class StationPreS {
 		//stationTrans.setDayModel(isDayModel);
 		
 	}
+public StationPreS(String stationId, String startTime, String endTime,int isDayModel,int mode, int mod,int order){
+		
+		this.stationId = stationId;
+		this.startTime = startTime;
+		this.endTime = endTime;
+		this.mod = mod;
+		this.mode = mode;
+		this.order = order;
+		//super(stationId, startTime, endTime,mod);
+		stationTrans = new StationTransitionS( stationId, startTime, endTime,isDayModel,mode, mod,order);
+		//stationTrans.setDayModel(isDayModel);
+		
+	}
 	public double acc_Zeigen(String time1, String time2,int topN){
 		double [][][] tensor = stationTrans.getTransiton();
 		double[] z_eigen = getZ(tensor, stationTrans.getStateSpace());
+		Matrix.print(tensor[2], stationTrans.getStateSpace());
+		DealVector.print(z_eigen, stationTrans.getStateSpace());
 		StationSequence sequence = new StationSequence();
 		List<Integer> array=sequence.findProcess(stationId, time1, time2, mod);
 		
@@ -144,8 +160,11 @@ public class StationPreS {
 		int length = array.size();
 		//System.out.println(array);
 		//System.out.println(length);
+		
+		System.out.println(array.subList(3, array.size()));
+		List<Integer> preList = new ArrayList<Integer>();
 		int accurrate=0;
-		for(int  i =0 ;i< length-1; i++){
+		for(int  i =2 ;i< length-1; i++){
 			double[] res = new double[stationTrans.getStateSpace()];
 			double state_r =0;
 			for(int j = 0; j < array_relate.size(); j++){
@@ -158,20 +177,121 @@ public class StationPreS {
 			//DealVector.print(result, lineTrans.getStateSpace());
 		   // System.out.println("pre_topN "+pre_topN);
 			//System.out.println("actual "+array.get(i+1)/mode);
-			if(pre_topN.contains(array.get(i+1)/mode)){
+			preList.add(ArrayHelper.getMinDisState(pre_topN, array.get(i+1)/mode)*mode);
+			if(ArrayHelper.isPredic(pre_topN, array.get(i+1)/mode, ArrayHelper.pre)){
 				accurrate+=1;
 			}
 		}
 		
-		
-		return ((double)accurrate/(length-1));
+		System.out.println(preList);
+		return ((double)accurrate/(length-3));
 	}
-	public static void main(String []args){
-		int segmentId = 36371609;
-		int sngSerialId = 4;
+	public double  accN(String startTime, String endTime,int topN){
+		List<List<Integer>> array_relate = new ArrayList<List<Integer>>();
+		List<Integer> array = new ArrayList<Integer>();
+		List<Integer> pre = new ArrayList<Integer>();
+		set_relate(array_relate,  stationId, startTime, endTime);
+
+		//array = GetIcArray.getIC_int(segmentId, stationId, startTime, endTime,mod);
+		StationSequence sequence  = new StationSequence();
+		if(isDayModel==0) array = sequence.findBydayProcess( stationId, startTime, endTime, mod);
+		else array = sequence.findProcess(stationId, startTime, endTime, mod);
+		int length = array.size();
+		int stateSpace =stationTrans.getStateSpace();
+		int accurrate =0;
+		System.out.println(array.subList(order, array.size()));
+		List<Integer> preList = new ArrayList<Integer>();
+		for(int  i =0 ;i< length-order; i++){
+			double[] res = new double[stateSpace];
+			List<List<Integer>> list_order = new ArrayList<List<Integer>>();
+			
+			for (int k = 0; k < order; k++) {
+				double state_r = 0;
+				for (int j = 0; j < array_relate.size(); j++) {
+					state_r += array_relate.get(j).get(i + k) * stationTrans.getParaN()[order-1-k][j];
+					
+				}
+				List<Integer> list = new ArrayList<Integer>();
+				list.add((int)state_r);
+				list.add(array.get(i+k));
+				list_order.add(list);
+			}
+			//System.out.println("pre state_r "+(int)state_r/mode+" "+array.get(i)/mode);
+			//
+			
+			double [] result=predictionN(res,list_order,order);
+			List<Integer> pre_topN= ArrayHelper.getTopN(result, topN);
+			//DealVector.print(result, lineTrans.getStateSpace());
+			//System.out.println("pre_topN "+pre_topN);
+			//System.out.println("actual "+array.get(i+1)/mode);
+			preList.add(ArrayHelper.getMinDisState(pre_topN, array.get(i+1)/mode)*mode);
+			if(ArrayHelper.isPredic(pre_topN, array.get(i+order)/mode, ArrayHelper.pre)){
+				accurrate+=1;
+			}
+		}
+		System.out.println(preList);
+		return ((double)accurrate/(length-order));
+	}
+	public double[] predictionN(double [] result_,List<List<Integer>> list,int order) {
+		// TODO Auto-generated method stub
+		int stateSpace = stationTrans.getStateSpace();
+		double[] state = new double[stateSpace];
+		double[] state_relate = new double[stateSpace];
+		double [][]multi =new double[stateSpace][stateSpace];
 		
-		String startTime = "06:30:00", endTime = "10:00:00";
-		String time1 =  "2015-12-11 06:30:00" ,time2 =  "2015-12-11 09:59:59";
+//		for(int i=0;i<order;i++){
+//			state_relate[] = para.get(order-1-i);
+//		}
+//		//System.out.println(state_);
+//		
+//		for(int i=0;i<order;i++){
+//			state[list.get(i).get(1)/mode>stateSpace-1?stateSpace-1:list.get(i).get(1)/mode] = para.get(order-1-i);
+//		}
+		
+//		double [][] matrix=Tensor_3order.orderMulti_one(tensor_3order, state_relate, stateSpace);
+//		Matrix.transpose(matrix,stateSpace);
+//		result_ = Matrix.multip_vector(matrix, state, stateSpace);
+		for(int i=0;i<order;i++){
+			int row = list.get(i).get(0)/mode>stateSpace-1?stateSpace-1:list.get(i).get(0)/mode;
+			int col = list.get(i).get(1)/mode>stateSpace-1?stateSpace-1:list.get(i).get(1)/mode;
+			multi[row][col] += stationTrans.getPara().get(order-1-i);
+		}
+		result_ = Tensor_3order.orderMulti_two(stationTrans.getTransiton(), multi, stateSpace);
+ 		return result_;
+	}
+	public static void  testN(){
+		String startTime = "06:30:00", endTime = "18:59:59";
+		String time1 =  "2015-12-13 06:30:00" ,time2 =  "2015-12-13 18:59:59";
+		SegmentStation  segSta = new SegmentStation();
+		SegmentStationSequence sequence = new SegmentStationSequence();
+		StationPreS stationPreS = new StationPreS("12111300000000045323", startTime, endTime,
+				2, 6, 10*60,3);
+		
+		System.out.println("para "+stationPreS.stationTrans.getPara());
+		double acc = stationPreS.accN(time1, time2,1);
+		System.out.println(stationPreS.acc_Zeigen(time1, time2, 1));
+		System.out.println("statespace size "+stationPreS.stationTrans.getStateSpace());
+		System.out.println(stationPreS.stationTrans.getRelate_station());
+		System.out.println("station-associated prediction :"+acc);
+	}
+	public static void  test(){
+		String startTime = "06:30:00", endTime = "18:59:59";
+		String time1 =  "2015-12-13 06:30:00" ,time2 =  "2015-12-13 18:59:59";
+		SegmentStation  segSta = new SegmentStation();
+		SegmentStationSequence sequence = new SegmentStationSequence();
+		StationPreS stationPreS = new StationPreS("12111300000000045323", startTime, endTime,
+				2, 6, 10*60);
+		
+		System.out.println("para "+stationPreS.stationTrans.getPara());
+		double acc = stationPreS.acc(time1, time2,1);
+		System.out.println(stationPreS.acc_Zeigen(time1, time2, 1));
+		System.out.println("statespace size "+stationPreS.stationTrans.getStateSpace());
+		System.out.println(stationPreS.stationTrans.getRelate_station());
+		System.out.println("station-associated prediction :"+acc);
+	}
+	public static void testP(){
+		String startTime = "06:30:00", endTime = "08:59:59";
+		String time1 =  "2015-12-13 06:30:00" ,time2 =  "2015-12-13 08:59:59";
 		
 		Station  station = new Station();
 		StationSequence sequence = new StationSequence();
@@ -183,18 +303,25 @@ public class StationPreS {
 			if(StationInfo.getNear(sta, 1, 200).size()==0) continue;
 			StationPreS stationPreS  = 
 					new StationPreS(sta, startTime, endTime,2,5, 10*60);
-			GeneralPreS generalPreS = new GeneralPreS( sta, startTime, endTime, 2, 5, 10*60);
-			double StaAcc = stationPreS.acc(time1, time2,2);
-			double sta_zAcc = stationPreS.acc_Zeigen(time1, time2, 2);
-			double gene_zAcc = generalPreS.acc_Zeigen(time1, time2, 2);
-			double GeneAcc = generalPreS.acc(time1, time2, 2);
-			list.get(i).append("StaAcc", StaAcc);
-			list.get(i).append("Sta_zAcc", sta_zAcc);
-			list.get(i).append("GeneAcc", GeneAcc);
-			list.get(i).append("Gene_zAcc", gene_zAcc);
-			MongoDBAssis.getDb().getCollection("staPre_mode5_mod10").insert(list.get(i));
+			GeneralPreS generalPreS = new GeneralPreS( sta, startTime, endTime, 2, 6, 10*60);
+			double StaAcc = stationPreS.acc(time1, time2,1);
+//			double sta_zAcc = stationPreS.acc_Zeigen(time1, time2, 2);
+//			double gene_zAcc = generalPreS.acc_Zeigen(time1, time2, 2);
+			double GeneAcc = generalPreS.acc(time1, time2, 1);
+			System.out.println("StaAcc "+StaAcc+" geneAcc "+GeneAcc);
+//			list.get(i).append("StaAcc", StaAcc);
+//			list.get(i).append("Sta_zAcc", sta_zAcc);
+//			list.get(i).append("GeneAcc", GeneAcc);
+//			list.get(i).append("Gene_zAcc", gene_zAcc);
+//			MongoDBAssis.getDb().getCollection("staPre_mode5_mod10").insert(list.get(i));
 			System.out.println(list.get(i));
 		}
+	}
+	public static void main(String []args){
+		int segmentId = 36371609;
+		int sngSerialId = 4;
+		testN();
+		test();
 		
 		
 		
@@ -203,7 +330,7 @@ public class StationPreS {
 		//linePreSS.setMode(3);
 //		generalPre.setMode(30);
 //		System.out.println(generalPre.acc(time1, time2));
-		//double[][][]matrix =linePreSS.lineTrans.getTransiton();
+		//double[][][]matrix =linePreSS.stationTrans.getTransiton();
 		//System.out.println("get matrix");
 		//DealVector.print(generalPre.getZ(matrix, generalPre.generalTrans.getStateSpace()),generalPre.generalTrans.getStateSpace());
 		//SegmentStationSequence sequence = new SegmentStationSequence();

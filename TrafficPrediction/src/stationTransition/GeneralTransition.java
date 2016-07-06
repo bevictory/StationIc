@@ -116,7 +116,7 @@ public class GeneralTransition {
 				// else transition[i][i] =1;
 				else {
 					// transition[i][i] =1.0/stateSpace;
-					transition[i][i] = 0.0;
+					transition[i][j] = 1.0/stateSpace;
 				}
 			}
 		}
@@ -144,6 +144,8 @@ public class GeneralTransition {
 					mod);
 		setStateSpace(ArrayHelper.getMax(array) / mode + 1);
 		initState = ArrayHelper.getInitState(array);
+		
+		para = new ArrayList<Double>();
 		transition = new double[stateSpace][stateSpace];
 		 tensor = new double[order][stateSpace][stateSpace];
 		setParaProcess();
@@ -207,6 +209,8 @@ public class GeneralTransition {
 			getTransiton();
 			int dis = getDis();
 			isSetTrans = false;
+			System.out.println(para);
+			System.out.println(dis);
 			// System.out.println(dis);
 			if (minDis > dis) {
 				minDis = dis;
@@ -236,7 +240,7 @@ public class GeneralTransition {
 			//
 
 			double[] result = prediction(res, list_order);
-			List<Integer> pre_topN = ArrayHelper.getTopN(result, 1);
+			List<Integer> pre_topN = ArrayHelper.getTopN(result, 2);
 			// DealVector.print(result, lineTrans.getStateSpace());
 			// System.out.println("pre_topN "+pre_topN);
 			// System.out.println("actual "+array.get(i+1)/mode);
@@ -244,7 +248,7 @@ public class GeneralTransition {
 		}
 		return dis;
 	}
-
+	
 	public double[] prediction(double[] result_, List<Integer> list) {
 		// TODO Auto-generated method stub
 		int stateSpace = getStateSpace();
@@ -255,7 +259,7 @@ public class GeneralTransition {
 		}
 		// System.out.println(state_);
 
-		Matrix.transpose(matrix, stateSpace);
+		//Matrix.transpose(matrix, stateSpace);
 		result_ = Matrix.multip_vector(matrix, state, stateSpace);
 		return result_;
 	}

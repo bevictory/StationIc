@@ -41,7 +41,7 @@ public class Tensor_3order_power {
 			ite++;
 			//System.out.println("the ite num: "+ite);
 			//DealVector.print(v, n);
-			if(ite >50) {
+			if(ite >100) {
 				break;
 			}
 		}

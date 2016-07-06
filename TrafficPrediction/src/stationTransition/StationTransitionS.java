@@ -26,7 +26,7 @@ public class StationTransitionS {
 	private List<List<Integer>> array_relate ;
 	private List<Double> para;
 	private int stateSpace ;
-	
+	private int setParaTopN=1;
 	private double [][] paraN;private int order =1;
 	public int getStateSpace() {
 		return stateSpace;
@@ -67,8 +67,9 @@ public class StationTransitionS {
 		//System.out.println(array);
 		set_arrayRelate( stationId, startTime, endTime);
 		setStateSpace(getMaxState(ArrayHelper.getMax(array))/mode+1);
-		set_para();
-		//setParaProcess();
+		transTensor = new double[stateSpace][stateSpace][stateSpace];
+		//set_para();
+		setParaProcess();
 	}
 	public ArrayList<String> getRelate_station() {
 		return relate_station;
@@ -79,8 +80,9 @@ public class StationTransitionS {
 	public double[][][] getTransiton(){
 		if(!isSetTrans){
 			
-			transTensor = new double[stateSpace][stateSpace][stateSpace];
-			toTransTensor(array);
+			
+			if(order ==1 )toTransTensor(array);
+			else toTransTensorN(array, order);
 			isSetTrans = true;
 		}
 		return transTensor;
@@ -88,6 +90,7 @@ public class StationTransitionS {
 	
 	public void toTransTensor(List<Integer> array) {
 		// TODO Auto-generated method stub
+		Tensor_3order.reset(transTensor, stateSpace, stateSpace, stateSpace);
 		double[][] sum = new double[stateSpace][stateSpace];
 		int length = array.size();
 		for(int i =0; i < array_relate.size();i++){
@@ -111,7 +114,8 @@ public class StationTransitionS {
 					// else tranMatrix[i][i] =1;
 					else {
 						//tranMatrix[i][j][k] = 1.0 / ( stateSpace);
-						transTensor[i][j][j] = 0.0;
+						transTensor[i][j][k] =1.0 / ( stateSpace);
+//						transTensor[i][j][j] =2.0;
 					}
 				}
 
@@ -134,7 +138,7 @@ public class StationTransitionS {
 				continue;
 			if(Station.getStationIcSum(nearStationList.get(i).getString("stationId"))<1000||isDayModel==2&&!sequence.hasWorkdayData(nearStationList.get(i).getString("stationId"), startTime, endTime, mod)) 
 				continue;
-			if(++num>4) break;
+			
 			List<Integer> array;
 			relate_station.add(nearStationList.get(i).getString("stationId"));
 			if(isDayModel==0) array= sequence.findBydayProcess(nearStationList.get(i).getString("stationId"), startTime, endTime, mod);
@@ -142,11 +146,13 @@ public class StationTransitionS {
 			else array=sequence.findWorkDayProcess(nearStationList.get(i).getString("stationId"),  startTime, endTime, mod);
 			//System.out.println(array);
 			array_relate.add(array);
+			num++;
+			if(num>=2) break;
 		}		
 	}
 	public void setParaProcess(){
 		if(array_relate.size() ==0) return;
-		System.out.println(array_relate.size());
+		//System.out.println(array_relate.size());
 		double []par = new double [array_relate.size()];
 		setPara(par, array_relate.size(), 0, 1);
 		para.clear();
@@ -165,7 +171,7 @@ public class StationTransitionS {
 			//
 			
 			double [] result=prediction(res,(int)state_r, array.get(i));
-			List<Integer> pre_topN= ArrayHelper.getTopN(result, 2);
+			List<Integer> pre_topN= ArrayHelper.getTopN(result, setParaTopN);
 			//DealVector.print(result, lineTrans.getStateSpace());
 			//System.out.println("pre_topN "+pre_topN);
 			//System.out.println("actual "+array.get(i+1)/mode);
@@ -246,7 +252,7 @@ public class StationTransitionS {
 	//多步转移张量构建过程
 	
 	//多步转移张量构建过程
-		public StationTransitionS(int segmentId, String stationId, String startTime, String endTime,
+		public StationTransitionS( String stationId, String startTime, String endTime,
 				int isDaymodel,int mode,int mod,int order){
 			this.mod = mod;
 			this.mode = mode;
@@ -265,7 +271,7 @@ public class StationTransitionS {
 			transTensor = new double[stateSpace][stateSpace][stateSpace];
 			tensor = new double [order][stateSpace][stateSpace][stateSpace];
 			paraN = new double[order][array_relate.size()];
-			System.out.println( "order "+order);
+		//	System.out.println( "order "+order);
 			setParaProcessN(order);
 		}
 		public double[][][] getTransiton(int order){
@@ -308,17 +314,18 @@ public class StationTransitionS {
 						
 						// else tranMatrix[i][i] =1;
 						else {
-							//transTensor[i][j][k] = 1.0 / ( stateSpace);
-							transTensor[i][j][j] = 2.0;
+							transTensor[i][j][k] = 1.0 / ( stateSpace);
+							//transTensor[i][j][j] = 2.0;
 						}
 					}
 
 				}
 			}
 		}
+		//paraN[order][i]order 下第i个相关的加权
 		public void setParaProcess(int order){
 			if(array_relate.size() ==0) return;
-			System.out.println(array_relate.size() );
+			//System.out.println(array_relate.size() );
 			minDis = Integer.MAX_VALUE;
 			setPara(paraN[order-1], array_relate.size(), 0, 1,order);
 			for(int i=0 ;i< array_relate.size();i++){
@@ -339,7 +346,7 @@ public class StationTransitionS {
 				//
 				
 				double [] result=prediction(res,(int)state_r, array.get(i));
-				List<Integer> pre_topN= ArrayHelper.getTopN(result, 1);
+				List<Integer> pre_topN= ArrayHelper.getTopN(result, setParaTopN);
 				//DealVector.print(result, lineTrans.getStateSpace());
 				//System.out.println("pre_topN "+pre_topN);
 				//System.out.println("actual "+array.get(i+1)/mode);
@@ -384,7 +391,7 @@ public class StationTransitionS {
 			}
 			for(double p=0.0;sum-p >10e-5; p+=0.01){
 				par[loc]=p;
-				setPara(par,n, loc+1, sum- p);
+				setPara(par,n, loc+1, sum- p,order);
 			}
 		}
 		
@@ -424,8 +431,8 @@ public class StationTransitionS {
 							
 							// else tranMatrix[i][i] =1;
 							else {
-								//transTensor[i][j][k] = 1.0 / ( stateSpace);
-								tensor[order-1][i][j][j] = 2.0;
+								tensor[order-1][i][j][k] = 1.0 / ( stateSpace);
+								//tensor[order-1][i][j][j] = 2.0;
 							}
 						}
 
@@ -442,16 +449,17 @@ public class StationTransitionS {
 			if(array_relate.size() ==0) return;
 			
 			for(int i=1 ;i<= order;i++){
-				setParaProcess(order);
+				setParaProcess(i);
 			}
+			//Matrix.print(paraN, order, array_relate.size());
 			minDis = Integer.MAX_VALUE;
 			double []par = new double [order];
-			System.out.println("setParaProcessN "+order);
+			//System.out.println("setParaProcessN "+order);
 			setParaN(par, order, 0, 1,order);
 			para.clear();
 			
 			para.addAll(minDisPara);
-			System.out.println("para size "+para.size());
+			//System.out.println("para size "+para.size());
 		}
 		public int  getDisN(int order){
 			int  dis =0;
@@ -476,7 +484,7 @@ public class StationTransitionS {
 				//
 				
 				double [] result=predictionN(res,list_order,order);
-				List<Integer> pre_topN= ArrayHelper.getTopN(result, 1);
+				List<Integer> pre_topN= ArrayHelper.getTopN(result, setParaTopN);
 				//DealVector.print(result, lineTrans.getStateSpace());
 				//System.out.println("pre_topN "+pre_topN);
 				//System.out.println("actual "+array.get(i+1)/mode);
@@ -509,6 +517,7 @@ public class StationTransitionS {
 				multi[row][col] += para.get(order-1-i);
 			}
 			result_ = Tensor_3order.orderMulti_two(transTensor, multi, stateSpace);
+			//DealVector.sum(result_, stateSpace);
 	 		return result_;
 		}
 		public double[][] getParaN() {
@@ -516,7 +525,7 @@ public class StationTransitionS {
 		}
 		public  void setParaN(double []par,int n,int loc, double sum,int order){
 			if(loc ==n-1) {
-				System.out.println("setParaN "+n);
+				//System.out.println("setParaN "+n);
 				par[loc] = sum;
 				para.clear();
 				for(int i=0;i<n;i++)
@@ -540,6 +549,7 @@ public class StationTransitionS {
 				setParaN(par,n, loc+1, sum- p,order);
 			}
 		}
+		
 	public static void main(String []args){
 		String startTime = "06:30:00", endTime = "10:00:00";
 		StationTransitionS stationTransitionS = new StationTransitionS("12111300000000045323", startTime, endTime, 2, 3, 30*60);

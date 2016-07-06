@@ -311,27 +311,27 @@ public class StationSequence {
 		//System.out.println("find process ");
 		List<Integer> segmentIc = new ArrayList<Integer>();
 		
-		for (int i=0;i<=Time.disDays(arrStart.get(0), arrEnd.get(0));i++){
-			if(i>0)
-			{
-				start = Time.addHours(start, 24);
-				end = Time.addHours(end, 24);
-			}
-			if(find(stationId, start, end) ==null){
-				return false;
-			}
-			//segmentIc.addAll(segmentIc(find(segmentId,stationId, start, end),mod));
-//			//System.out.println(segmentId);
-//			System.out.println(start);
-//			System.out.println(start);
-//			System.out.println(end);
-								
-		}
-		if(find( stationId, "2015-11-16 "+s, "2015-11-16 "+e)==null)
-			return false;;
+//		for (int i=0;i<=Time.disDays(arrStart.get(0), arrEnd.get(0));i++){
+//			if(i>0)
+//			{
+//				start = Time.addHours(start, 24);
+//				end = Time.addHours(end, 24);
+//			}
+//			if(find(stationId, start, end) ==null){
+//				return false;
+//			}
+//			//segmentIc.addAll(segmentIc(find(segmentId,stationId, start, end),mod));
+////			//System.out.println(segmentId);
+////			System.out.println(start);
+////			System.out.println(start);
+////			System.out.println(end);
+//								
+//		}
+//		if(find( stationId, "2015-11-16 "+s, "2015-11-16 "+e)==null)
+//			return false;;
 		
 		startTime = "2015-12-07 "+s;
-		 endTime = "2015-12-10 "+e;
+		 endTime = "2015-12-12 "+e;
 		 arrStart = Time.getDateTime(startTime);arrEnd = Time.getDateTime(endTime);
 		 start=startTime;
 		str =new StringTokenizer(endTime, " ");
@@ -375,23 +375,23 @@ public class StationSequence {
 		//System.out.println("find process ");
 		List<Integer> segmentIc = new ArrayList<Integer>();
 		
-		for (int i=0;i<=Time.disDays(arrStart.get(0), arrEnd.get(0));i++){
-			if(i>0)
-			{
-				start = Time.addHours(start, 24);
-				end = Time.addHours(end, 24);
-			}
-			segmentIc.addAll(segmentIc(find(stationId, start, end),mod));
-//			//System.out.println(segmentId);
-//			System.out.println(start);
-			//System.out.println(start);
-			//System.out.println(end);
-								
-		}
-		segmentIc.addAll(segmentIc(find( stationId, "2015-11-16 "+s, "2015-11-16 "+e),mod));
+//		for (int i=0;i<=Time.disDays(arrStart.get(0), arrEnd.get(0));i++){
+//			if(i>0)
+//			{
+//				start = Time.addHours(start, 24);
+//				end = Time.addHours(end, 24);
+//			}
+//			segmentIc.addAll(segmentIc(find(stationId, start, end),mod));
+////			//System.out.println(segmentId);
+////			System.out.println(start);
+//			//System.out.println(start);
+//			//System.out.println(end);
+//								
+//		}
+//		segmentIc.addAll(segmentIc(find( stationId, "2015-11-16 "+s, "2015-11-16 "+e),mod));
 		
 		startTime = "2015-12-07 "+s;
-		 endTime = "2015-12-10 "+e;
+		 endTime = "2015-12-12 "+e;
 		 arrStart = Time.getDateTime(startTime);arrEnd = Time.getDateTime(endTime);
 		 start=startTime;
 		str =new StringTokenizer(endTime, " ");
@@ -603,6 +603,21 @@ public class StationSequence {
 				"function(cur,pre){count=pre.count+cur.traffic;}");
 		System.out.println(result);
 	}
+	
+	public static List<Double> divide(List<Integer> list,int mode){
+		double []p =new double[ArrayHelper.getMax(list)/mode+1];
+		System.out.println(p.length);
+		for(int i=0;i<list.size();i++){
+			p[list.get(i)/mode]+=1;
+		}
+		List<Double> result = new ArrayList<Double>();
+		for(int i=0;i<p.length;i++){
+			p[i]/=list.size();
+			result.add(p[i]*100);
+		}
+		System.out.println(result.size());
+		return result;
+	}
 	public static void main(String []args){
 //		Station station=new Station();
 //		station.getStationId();
@@ -623,8 +638,8 @@ public class StationSequence {
 		
 		StationSequence s = new StationSequence();
 		//s.find("12111300000000045252",	 startTime, endTime);
-		List<Integer> list = s.findWorkDayProcess( "12111300000000035232", "06:30:00", "09:29:59",  30*60);
-		System.out.println(list);
+		List<Integer> list = s.findWorkDayProcess( "12111300000000045323", "06:30:00", "18:59:59",  10*60);
+		System.out.println(divide(list, 1));
 //		s.saveToFile("icArray12_60",list);
 		//s.findProcess("12111300000000045252", startTime, endTime, 5*60);
 		//s.getStationIcProcess();

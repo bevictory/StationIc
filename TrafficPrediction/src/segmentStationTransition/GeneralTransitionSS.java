@@ -146,9 +146,9 @@ public class GeneralTransitionSS {
 			transition = new double[stateSpace][stateSpace];
 			tensor = new double[order][stateSpace][stateSpace];
 			setParaProcess();
-//			para.add(1.0);
+//			para.add(0.50);
 //			para.add(0.0);
-//			para.add(0.0);
+//			para.add(0.5);
 		}
 	
 	
@@ -180,7 +180,7 @@ public class GeneralTransitionSS {
 	 * 多步转移张量的参数构建过程
 	 */
 	public void setParaProcess(){
-		if(order ==1) return;
+		
 		
 		double []par = new double [order];
 		setPara(par, order, 0, 1);
@@ -193,14 +193,16 @@ public class GeneralTransitionSS {
 			para.clear();
 			for(int i=0;i<n;i++)
 				para.add(par[i]);
-			//System.out.println(para);
+			
 			
 			//获得转移张量
 			getTransiton();
 			
 			int dis = getDis();
 			isSetTrans=false;
-			//System.out.println(dis);
+			System.out.println(para);
+			System.out.println("dis" +dis);
+			System.out.println("mindis "+minDis);
 			if(minDis> dis){
 				minDis = dis; 
 				minDisPara.clear();				

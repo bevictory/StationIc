@@ -53,7 +53,7 @@ public static void reset_array(double [][][][] tensor_4order, int arrayCluster,i
 			for(int j =0; j < stateSpace; j++){
 				for(int k =0; k < cluster_num; k++){
 					for(int m =0;m<stateSpace ; m++){
-						result[i][j] += tensor_4order[i][j][k][m]*matrix[k][m];
+						result[i][j] += tensor_4order[k][i][m][j]*matrix[k][m];
 					}
 				}
 					
@@ -74,6 +74,7 @@ public static void reset_array(double [][][][] tensor_4order, int arrayCluster,i
 					
 			}
 		}
+		
 		return result;
 	}
 

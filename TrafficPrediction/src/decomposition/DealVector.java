@@ -48,6 +48,13 @@ public class DealVector {
 			v[i]+=v1[i]*para;
 		}
 	}
+	public static void sum(double []result,int n){
+		double a=0;
+		for(int j=0;j<n;j++){
+			a+=result[j];
+		}
+		System.out.println("vector sum "+a);
+	}
 	public static double norm_2(double[] v,double[] z ,int n){
 		double result=0;
 		for(int i=0;i<n;i++){
