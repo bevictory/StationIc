@@ -272,6 +272,7 @@ public class StationSequence {
 								
 		}
 		//System.out.println(segmentIc);
+		if(PredictDis.isPreDis) segmentIc=dis(segmentIc);
 		return segmentIc;
 		//saveToFile("icArray", segmentIc);
 	}
@@ -331,7 +332,7 @@ public class StationSequence {
 //			return false;;
 		
 		startTime = "2015-12-07 "+s;
-		 endTime = "2015-12-12 "+e;
+		 endTime = "2015-12-10 "+e;
 		 arrStart = Time.getDateTime(startTime);arrEnd = Time.getDateTime(endTime);
 		 start=startTime;
 		str =new StringTokenizer(endTime, " ");
@@ -391,7 +392,7 @@ public class StationSequence {
 //		segmentIc.addAll(segmentIc(find( stationId, "2015-11-16 "+s, "2015-11-16 "+e),mod));
 		
 		startTime = "2015-12-07 "+s;
-		 endTime = "2015-12-12 "+e;
+		 endTime = "2015-12-10 "+e;
 		 arrStart = Time.getDateTime(startTime);arrEnd = Time.getDateTime(endTime);
 		 start=startTime;
 		str =new StringTokenizer(endTime, " ");
@@ -419,6 +420,7 @@ public class StationSequence {
 		
 		//System.out.println(segmentId+" "+s+" "+ e);
 		//System.out.println(segmentIc);
+		if(PredictDis.isPreDis)segmentIc = dis(segmentIc);
 		return segmentIc;
 		//saveToFile("icArray", segmentIc);
 	}
@@ -606,7 +608,7 @@ public class StationSequence {
 	
 	public static List<Double> divide(List<Integer> list,int mode){
 		double []p =new double[ArrayHelper.getMax(list)/mode+1];
-		System.out.println(p.length);
+		//System.out.println(p.length);
 		for(int i=0;i<list.size();i++){
 			p[list.get(i)/mode]+=1;
 		}
@@ -615,9 +617,23 @@ public class StationSequence {
 			p[i]/=list.size();
 			result.add(p[i]*100);
 		}
-		System.out.println(result.size());
+		//System.out.println(result.size());
 		return result;
 	}
+	
+	public static List<Integer> dis(List<Integer> list){
+		double []p =new double[ArrayHelper.getMax(list)+1];
+		//System.out.println(p.length);
+		List<Integer> result = new ArrayList<Integer>();
+		for(int i=1;i<list.size();i++){
+			result.add(list.get(i)-list.get(i-1));
+		}
+		
+		
+		//System.out.println(result.size());
+		return result;
+	}
+	
 	public static void main(String []args){
 //		Station station=new Station();
 //		station.getStationId();
@@ -638,12 +654,42 @@ public class StationSequence {
 		
 		StationSequence s = new StationSequence();
 		//s.find("12111300000000045252",	 startTime, endTime);
-		List<Integer> list = s.findWorkDayProcess( "12111300000000045323", "06:30:00", "18:59:59",  10*60);
-		System.out.println(divide(list, 1));
+		//List<Integer> list = s.findWorkDayProcess( "12111300000000045323", "06:30:00", "18:59:59",  10*60);
+		//System.out.println(divide(list, 1));
 //		s.saveToFile("icArray12_60",list);
 		//s.findProcess("12111300000000045252", startTime, endTime, 5*60);
 		//s.getStationIcProcess();
 		//System.out.println(s.getSum());
+		
+		String startTime = "06:00:00", endTime = "09:59:59";
+		String time1 =  "2015-12-13 06:30:00" ,time2 =  "2015-12-13 18:59:59";
+//		MultiPreSS multiPreSS  = 
+//				new MultiPreSS(35632502, "12111300000000045323", startTime, endTime,2,5, 30*60);
+		
+		List<Integer> list=s.findWorkDayProcess("12111300000000045323", startTime, endTime, 60*60);
+		System.out.println(list);
+		System.out.println(dis(list));
+//		Station station = new Station();
+//		StationSequence sequence = new StationSequence();
+//		List<BasicDBObject> stalist=Station.getStaFromAnaly();
+//		
+//	
+//		
+//		
+//		for(int i =0;i<100;i++){
+//			//System.out.println("i "+i);
+//			String sta =stalist.get(i).getString("stationId");
+//			if(!sequence.hasWorkdayData( sta, startTime, endTime, 10*60)||!sequence.hasData(sta, time1, time2, 10*60)) continue;
+//			if(StationInfo.getNear(sta, 1, 200).size() ==0) continue;
+//			System.out.print(stalist.get(i).getString("stationName")+" ");
+//			List<Integer> list=sequence.findWorkDayProcess(sta, startTime, endTime, 10*60);
+//			List<Double> list2=divide(list, 6);
+//			for(int j =0; j<list2.size();j++){
+//				System.out.printf("%.4f",list2.get(j));
+//				System.out.print(" ");
+//			}
+//			System.out.println();
+//		}
 		
 	}
 

@@ -160,7 +160,7 @@ public class LinePreSS {
 		//System.out.println(length);
 		System.out.println(array.subList(3, array.size()));
 		List<Integer> preList = new ArrayList<Integer>();
-		
+		double preBias=0.0;
 		int accurrate=0;
 		for(int  i =2 ;i< length-1; i++){
 			double[] res = new double[lineTrans.getStateSpace()];
@@ -178,13 +178,16 @@ public class LinePreSS {
 //			if(pre_topN.contains(array.get(i+1)/mode)){
 //				accurrate+=1;
 //			}
-			preList.add(ArrayHelper.getMinDisState(pre_topN, array.get(i+1)/mode)*mode);
+			int state = ArrayHelper.getMinDisState(pre_topN, array.get(i+1)/mode)*mode;
+			preList.add(state);
+			preBias += array.get(i+1)>0?(double)Math.abs(array.get(i+1)-state)/array.get(i+1):
+				(double)Math.abs(array.get(i+1)-state)/mode-1;
 			if(ArrayHelper.isPredic(pre_topN, array.get(i+1)/mode, ArrayHelper.pre)){
 				accurrate+=1;
 			}
 		}
 		System.out.println(preList);
-		
+		System.out.println("preBias "+preBias/(length-3));
 		return ((double)accurrate/(length-3));
 	}
 	
@@ -201,6 +204,7 @@ public class LinePreSS {
 		int length = array.size();
 		int stateSpace =lineTrans.getStateSpace();
 		int accurrate =0;
+		double preBias =0.0;
 		System.out.println(array.subList(order, array.size()));
 		List<Integer> preList = new ArrayList<Integer>();
 		for(int  i =0 ;i< length-order; i++){
@@ -227,12 +231,17 @@ public class LinePreSS {
 			//System.out.println("pre_topN "+pre_topN);
 			//System.out.println("actual "+array.get(i+1)/mode);
 			
-			preList.add(ArrayHelper.getMinDisState(pre_topN, array.get(i+order)/mode)*mode);
+			//preList.add(ArrayHelper.getMinDisState(pre_topN, array.get(i+order)/mode)*mode);
+			int state = ArrayHelper.getMinDisState(pre_topN, array.get(i+order)/mode)*mode;
+			preList.add(state);
+			preBias += array.get(i+order)>0?(double)Math.abs(array.get(i+order)-state)/array.get(i+order):
+				(double)Math.abs(array.get(i+order)-state)/mode-1;
 			if(ArrayHelper.isPredic(pre_topN, array.get(i+order)/mode, ArrayHelper.pre)){
 				accurrate+=1;
 			}
 		}
 		System.out.println(preList);
+		System.out.println("preBias "+preBias/(length-order));
 		return ((double)accurrate/(length-order));
 	}
 	public double[] predictionN(double [] result_,List<List<Integer>> list,int order) {
@@ -317,7 +326,7 @@ public class LinePreSS {
 	}
 	public static void  testN(){
 		String startTime = "06:30:00", endTime = "18:59:59";
-		String time1 =  "2015-12-10 06:30:00" ,time2 =  "2015-12-10 18:59:59";
+		String time1 =  "2015-12-11 06:30:00" ,time2 =  "2015-12-11 18:59:59";
 		SegmentStation  segSta = new SegmentStation();
 		SegmentStationSequence sequence = new SegmentStationSequence();
 		LinePreSS linePreSS = new LinePreSS(35632502, "12111300000000045323", startTime, endTime,
@@ -332,7 +341,7 @@ public class LinePreSS {
 	}
 	public static void  test(){
 		String startTime = "06:30:00", endTime = "18:59:59";
-		String time1 =  "2015-12-10 06:30:00" ,time2 =  "2015-12-10 18:59:59";
+		String time1 =  "2015-12-11 06:30:00" ,time2 =  "2015-12-11 18:59:59";
 		SegmentStation  segSta = new SegmentStation();
 		SegmentStationSequence sequence = new SegmentStationSequence();
 		LinePreSS linePreSS = new LinePreSS(35632502, "12111300000000045323", startTime, endTime,

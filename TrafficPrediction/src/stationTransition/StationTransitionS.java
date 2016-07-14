@@ -11,7 +11,9 @@ import decomposition.Tensor_3order;
 import decomposition.Tensor_4order;
 
 import util.ArrayHelper;
+import util.PredictDis;
 import util.SegmentStationSequence;
+import util.StateSet;
 import util.Station;
 import util.StationInfo;
 import util.StationSequence;
@@ -45,6 +47,7 @@ public class StationTransitionS {
 	private List<Double> minDisPara = new ArrayList<Double>();
 	private int minDis=Integer.MAX_VALUE;
 	private double[][][][] tensor;
+	private double [][] multi;
 	public void setMode(int mode) {
 		this.mode = mode;
 		this.stateSpace= this.stateSpace/mode+1;
@@ -67,6 +70,11 @@ public class StationTransitionS {
 		//System.out.println(array);
 		set_arrayRelate( stationId, startTime, endTime);
 		setStateSpace(getMaxState(ArrayHelper.getMax(array))/mode+1);
+		PredictDis.dealSequence(array, stateSpace);
+		for(int i=0;i<array_relate.size();i++){
+			PredictDis.dealSequence(array_relate.get(i), stateSpace);
+		}
+		
 		transTensor = new double[stateSpace][stateSpace][stateSpace];
 		//set_para();
 		setParaProcess();
@@ -145,6 +153,7 @@ public class StationTransitionS {
 			else if(isDayModel==1)array= sequence.findProcess(nearStationList.get(i).getString("stationId"), startTime, endTime, mod);
 			else array=sequence.findWorkDayProcess(nearStationList.get(i).getString("stationId"),  startTime, endTime, mod);
 			//System.out.println(array);
+			//PredictDis.dealSequence(array, stateSpace);
 			array_relate.add(array);
 			num++;
 			if(num>=2) break;
@@ -185,10 +194,13 @@ public class StationTransitionS {
 		double[] state = new double[stateSpace];
 		double[] state_relate = new double[stateSpace];
 		double[][][] tensor_3order = getTransiton();
-		state_relate[state_r/mode>stateSpace-1?stateSpace-1:state_r/mode] = 1.0;
+		//state_relate[state_r/mode>stateSpace-1?stateSpace-1:state_r/mode] = 1.0;
+		//System.out.println(state_);
+		StateSet.setState(state_relate, stateSpace,state_r/mode>stateSpace-1?stateSpace-1:state_r/mode);
 		//System.out.println(state_);
 		
-		state[state_/mode>stateSpace-1?stateSpace-1:state_/mode]=1.0;
+		//state[state_/mode>stateSpace-1?stateSpace-1:state_/mode]=1.0;
+		StateSet.setState(state, stateSpace, state_/mode>stateSpace-1?stateSpace-1:state_/mode);
 		
 		double [][] matrix=Tensor_3order.orderMulti_one(tensor_3order, state_relate, stateSpace);
 		Matrix.transpose(matrix,stateSpace);
@@ -266,11 +278,20 @@ public class StationTransitionS {
 			if(isDayModel==0) array= sequence.findBydayProcess(stationId, startTime, endTime, mod);
 			else if(isDayModel==1)array= sequence.findProcess(stationId, startTime, endTime, mod);
 			else array=sequence.findWorkDayProcess( stationId, startTime, endTime, mod);
+			
+			
+			
 			set_arrayRelate(stationId, startTime, endTime);
 			setStateSpace(getMaxState(ArrayHelper.getMax(array))/mode+1);
+			PredictDis.dealSequence(array, stateSpace);
+			for(int i=0;i<array_relate.size();i++){
+				PredictDis.dealSequence(array_relate.get(i), stateSpace);
+			}
+			
 			transTensor = new double[stateSpace][stateSpace][stateSpace];
 			tensor = new double [order][stateSpace][stateSpace][stateSpace];
 			paraN = new double[order][array_relate.size()];
+			multi =new double[stateSpace][stateSpace];
 		//	System.out.println( "order "+order);
 			setParaProcessN(order);
 		}
@@ -360,11 +381,12 @@ public class StationTransitionS {
 			double[] state = new double[stateSpace];
 			double[] state_relate = new double[stateSpace];
 			double[][][] tensor_3order = getTransiton(order);
-			state_relate[state_r/mode>stateSpace-1?stateSpace-1:state_r/mode] = 1.0;
+			//state_relate[state_r/mode>stateSpace-1?stateSpace-1:state_r/mode] = 1.0;
+			StateSet.setState(state_relate, stateSpace, state_r/mode>stateSpace-1?stateSpace-1:state_r/mode);
 			//System.out.println(state_);
 			
-			state[state_/mode>stateSpace-1?stateSpace-1:state_/mode]=1.0;
-			
+			//state[state_/mode>stateSpace-1?stateSpace-1:state_/mode]=1.0;
+			StateSet.setState(state, stateSpace, state_/mode>stateSpace-1?stateSpace-1:state_/mode);
 			double [][] matrix=Tensor_3order.orderMulti_one(tensor_3order, state_relate, stateSpace);
 			Matrix.transpose(matrix,stateSpace);
 			result_ = Matrix.multip_vector(matrix, state, stateSpace);
@@ -446,15 +468,18 @@ public class StationTransitionS {
 			
 		}
 		public void setParaProcessN(int order){
-			if(array_relate.size() ==0) return;
+			
 			
 			for(int i=1 ;i<= order;i++){
+				//System.out.println("setpara"+i);
 				setParaProcess(i);
 			}
 			//Matrix.print(paraN, order, array_relate.size());
 			minDis = Integer.MAX_VALUE;
 			double []par = new double [order];
+			
 			//System.out.println("setParaProcessN "+order);
+			
 			setParaN(par, order, 0, 1,order);
 			para.clear();
 			
@@ -495,10 +520,10 @@ public class StationTransitionS {
 		public double[] predictionN(double [] result_,List<List<Integer>> list,int order) {
 			// TODO Auto-generated method stub
 			int stateSpace = getStateSpace();
-			double[] state = new double[stateSpace];
-			double[] state_relate = new double[stateSpace];
-			double [][]multi =new double[stateSpace][stateSpace];
-			
+			//double[] state = new double[stateSpace];
+			//double[] state_relate = new double[stateSpace];
+			//double [][]multi =new double[stateSpace][stateSpace];
+			Matrix.reset(multi, stateSpace);
 //			for(int i=0;i<order;i++){
 //				state_relate[] = para.get(order-1-i);
 //			}
@@ -514,7 +539,9 @@ public class StationTransitionS {
 			for(int i=0;i<order;i++){
 				int row = list.get(i).get(0)/mode>stateSpace-1?stateSpace-1:list.get(i).get(0)/mode;
 				int col = list.get(i).get(1)/mode>stateSpace-1?stateSpace-1:list.get(i).get(1)/mode;
-				multi[row][col] += para.get(order-1-i);
+//				multi[row][col] += para.get(order-1-i);
+				
+				StateSet.setState(multi, stateSpace, row,col, para.get(order-1));
 			}
 			result_ = Tensor_3order.orderMulti_two(transTensor, multi, stateSpace);
 			//DealVector.sum(result_, stateSpace);

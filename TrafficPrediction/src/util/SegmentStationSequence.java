@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import mongodb.MongoDBAssis;
+import mongodb.QueryBls;
 
 import org.bson.Document;
 
@@ -644,7 +645,7 @@ public class SegmentStationSequence {
 		String stationId="12111300000000045323";
 		SegmentStationSequence sequence = new SegmentStationSequence();
 		//System.out.println(sequence.getStartEndTime(segmentId, stationId, 10*60));
-		String start ="06:30:00", end ="18:59:59";
+		String start ="06:30:00", end ="09:59:59";
 		String startTime = "2015-12-09 06:30:00", endTime = "2015-12-09 18:59:59";
 //		SegmentStationSequence sequence = new SegmentStationSequence();
 //		List<Integer> list=sequence.findProcess(segmentId, stationId,startTime , endTime,  30*60);
@@ -660,9 +661,36 @@ public class SegmentStationSequence {
 //		sequence.saveToFile("icArray12_60", list);
 //		System.out.println(list);
 		//		sequence.findProcess(35633102, "12111300000000045252", startTime, endTime,10*60);35616250, 35647249
-		List<Integer> list=sequence.findWorkDayProcess(35647249, "12111300000000045323", start, end, 15*60);
-		System.out.println(list);
-		System.out.println(divide(list, 1));
+//		List<Integer> list=sequence.findWorkDayProcess(35632502, "12111300000000045323", start, end, 30*60);
+//		System.out.println(list);
+//		System.out.println(divide(list, 5));
+		
+		Station st = new Station();
+		//StationSequence sequence = new StationSequence();
+		SegmentStation  segSta = new SegmentStation();
+
+		List<BasicDBObject> segstalist=segSta.getSegStaFromAnaly();
+		
+	
+		
+		
+		for(int i =0;i<100;i++){
+			int seg =segstalist.get(i).getInt("segmentId") ;
+			String sta =segstalist.get(i).getString("stationId");
+			if(!sequence.hasWorkdayData(seg, sta, start, end, 15*60)) continue;
+			if(QueryBls.getSameStation(MongoDBAssis.getDb(), seg, sta).size() ==0) continue;
+			List<Integer> list=sequence.findWorkDayProcess(seg, sta, start, end, 15*60);
+			//System.out.println(list);
+			System.out.print(segstalist.get(i).getString("stationName")+" ");
+			List<Double> list2=divide(list, 4);
+			for(int j =0; j<list2.size();j++){
+				System.out.printf("%.4f",list2.get(j));
+				System.out.print(" ");
+			}
+			System.out.println();
+		}
+		
+		
 	}
 	
 }

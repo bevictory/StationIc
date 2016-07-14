@@ -20,8 +20,10 @@ import segmentStationTransition.LineTransitionSS;
 import stationTransition.StationTransitionS;
 import transition.Transition;
 import util.ArrayHelper;
+import util.PredictDis;
 import util.SegmentStation;
 import util.SegmentStationSequence;
+import util.StateSet;
 import util.Station;
 import util.StationInfo;
 import util.StationSequence;
@@ -122,10 +124,14 @@ public StationPreS(String stationId, String startTime, String endTime,int isDayM
 		double[] state = new double[stateSpace];
 		double[] state_relate = new double[stateSpace];
 		double[][][] tensor_3order = stationTrans.getTransiton();
-		state_relate[state_r/mode>stateSpace-1?stateSpace-1:state_r/mode] = 1.0;
+		//state_relate[state_r/mode>stateSpace-1?stateSpace-1:state_r/mode] = 1.0;
 		//System.out.println(state_);
 		
-		state[state_/mode>stateSpace-1?stateSpace-1:state_/mode]=1.0;
+		StateSet.setState(state_relate, stateSpace, state_r/mode>stateSpace-1?stateSpace-1:state_r/mode);
+		//System.out.println(state_);
+		
+		//state[state_/mode>stateSpace-1?stateSpace-1:state_/mode]=1.0;
+		StateSet.setState(state, stateSpace, state_/mode>stateSpace-1?stateSpace-1:state_/mode);
 		
 		double [][] matrix=Tensor_3order.orderMulti_one(tensor_3order, state_relate, stateSpace);
 		Matrix.transpose(matrix,stateSpace);
@@ -143,7 +149,11 @@ public StationPreS(String stationId, String startTime, String endTime,int isDayM
 			List<Integer> array;
 			if(isDayModel==0) array= sequence.findBydayProcess(stationList.get(i),startTime, endTime, mod);
 			else array= sequence.findProcess(stationList.get(i), startTime, endTime, mod);
+			
+			PredictDis.dealSequence(array, stationTrans.getStateSpace());
 			array_relate.add(array);
+			
+			
 			//System.out.println(array);
 		}
 	}
@@ -157,6 +167,7 @@ public StationPreS(String stationId, String startTime, String endTime,int isDayM
 		StationSequence sequence  = new StationSequence();
 		if(isDayModel==0) array = sequence.findBydayProcess(stationId, startTime, endTime, mod);
 		else array = sequence.findProcess(stationId, startTime, endTime, mod);
+		PredictDis.dealSequence(array, stationTrans.getStateSpace());
 		int length = array.size();
 		//System.out.println(array);
 		//System.out.println(length);
@@ -164,6 +175,7 @@ public StationPreS(String stationId, String startTime, String endTime,int isDayM
 		System.out.println(array.subList(3, array.size()));
 		List<Integer> preList = new ArrayList<Integer>();
 		int accurrate=0;
+		double preBias=0.0;
 		for(int  i =2 ;i< length-1; i++){
 			double[] res = new double[stationTrans.getStateSpace()];
 			double state_r =0;
@@ -177,13 +189,18 @@ public StationPreS(String stationId, String startTime, String endTime,int isDayM
 			//DealVector.print(result, lineTrans.getStateSpace());
 		   // System.out.println("pre_topN "+pre_topN);
 			//System.out.println("actual "+array.get(i+1)/mode);
-			preList.add(ArrayHelper.getMinDisState(pre_topN, array.get(i+1)/mode)*mode);
+			//preList.add(ArrayHelper.getMinDisState(pre_topN, array.get(i+1)/mode)*mode);
+			int state = ArrayHelper.getMinDisState(pre_topN, array.get(i+1)/mode)*mode;
+			preList.add(state);
+			preBias += array.get(i+1)>0?(double)Math.abs(array.get(i+1)-state)/array.get(i+1):
+				(double)Math.abs(array.get(i+1)-state)/mode-1;
 			if(ArrayHelper.isPredic(pre_topN, array.get(i+1)/mode, ArrayHelper.pre)){
 				accurrate+=1;
 			}
 		}
 		
 		System.out.println(preList);
+		System.out.println("preBias "+preBias/(length-3));
 		return ((double)accurrate/(length-3));
 	}
 	public double  accN(String startTime, String endTime,int topN){
@@ -196,10 +213,13 @@ public StationPreS(String stationId, String startTime, String endTime,int isDayM
 		StationSequence sequence  = new StationSequence();
 		if(isDayModel==0) array = sequence.findBydayProcess( stationId, startTime, endTime, mod);
 		else array = sequence.findProcess(stationId, startTime, endTime, mod);
+		PredictDis.dealSequence(array, stationTrans.getStateSpace());
+		
 		int length = array.size();
 		int stateSpace =stationTrans.getStateSpace();
 		int accurrate =0;
 		System.out.println(array.subList(order, array.size()));
+		double preBias=0.0;
 		List<Integer> preList = new ArrayList<Integer>();
 		for(int  i =0 ;i< length-order; i++){
 			double[] res = new double[stateSpace];
@@ -224,12 +244,17 @@ public StationPreS(String stationId, String startTime, String endTime,int isDayM
 			//DealVector.print(result, lineTrans.getStateSpace());
 			//System.out.println("pre_topN "+pre_topN);
 			//System.out.println("actual "+array.get(i+1)/mode);
-			preList.add(ArrayHelper.getMinDisState(pre_topN, array.get(i+1)/mode)*mode);
+			//preList.add(ArrayHelper.getMinDisState(pre_topN, array.get(i+1)/mode)*mode);
+			int state = ArrayHelper.getMinDisState(pre_topN, array.get(i+order)/mode)*mode;
+			preList.add(state);
+			preBias += array.get(i+order)>0?(double)Math.abs(array.get(i+order)-state)/array.get(i+order):
+				(double)Math.abs(array.get(i+order)-state)/mode-1;
 			if(ArrayHelper.isPredic(pre_topN, array.get(i+order)/mode, ArrayHelper.pre)){
 				accurrate+=1;
 			}
 		}
 		System.out.println(preList);
+		System.out.println("preBias "+preBias/(length-order));
 		return ((double)accurrate/(length-order));
 	}
 	public double[] predictionN(double [] result_,List<List<Integer>> list,int order) {
@@ -254,37 +279,39 @@ public StationPreS(String stationId, String startTime, String endTime,int isDayM
 		for(int i=0;i<order;i++){
 			int row = list.get(i).get(0)/mode>stateSpace-1?stateSpace-1:list.get(i).get(0)/mode;
 			int col = list.get(i).get(1)/mode>stateSpace-1?stateSpace-1:list.get(i).get(1)/mode;
-			multi[row][col] += stationTrans.getPara().get(order-1-i);
+//			multi[row][col] += stationTrans.getPara().get(order-1-i);
+			
+			StateSet.setState(multi, stateSpace, row, col, stationTrans.getPara().get(order-1-i));
 		}
 		result_ = Tensor_3order.orderMulti_two(stationTrans.getTransiton(), multi, stateSpace);
  		return result_;
 	}
 	public static void  testN(){
-		String startTime = "06:30:00", endTime = "18:59:59";
-		String time1 =  "2015-12-13 06:30:00" ,time2 =  "2015-12-13 18:59:59";
+		String startTime = "06:30:00", endTime = "09:59:59";
+		String time1 =  "2015-12-11 06:30:00" ,time2 =  "2015-12-11 09:59:59";
 		SegmentStation  segSta = new SegmentStation();
 		SegmentStationSequence sequence = new SegmentStationSequence();
 		StationPreS stationPreS = new StationPreS("12111300000000045323", startTime, endTime,
-				2, 6, 10*60,3);
+				2, 1, 10*60,2);
 		
 		System.out.println("para "+stationPreS.stationTrans.getPara());
 		double acc = stationPreS.accN(time1, time2,1);
-		System.out.println(stationPreS.acc_Zeigen(time1, time2, 1));
+		//System.out.println(stationPreS.acc_Zeigen(time1, time2, 1));
 		System.out.println("statespace size "+stationPreS.stationTrans.getStateSpace());
 		System.out.println(stationPreS.stationTrans.getRelate_station());
 		System.out.println("station-associated prediction :"+acc);
 	}
 	public static void  test(){
-		String startTime = "06:30:00", endTime = "18:59:59";
-		String time1 =  "2015-12-13 06:30:00" ,time2 =  "2015-12-13 18:59:59";
+		String startTime = "06:30:00", endTime = "09:59:59";
+		String time1 =  "2015-12-11 06:30:00" ,time2 =  "2015-12-11 09:59:59";
 		SegmentStation  segSta = new SegmentStation();
 		SegmentStationSequence sequence = new SegmentStationSequence();
 		StationPreS stationPreS = new StationPreS("12111300000000045323", startTime, endTime,
-				2, 6, 10*60);
+				2, 1, 10*60);
 		
 		System.out.println("para "+stationPreS.stationTrans.getPara());
 		double acc = stationPreS.acc(time1, time2,1);
-		System.out.println(stationPreS.acc_Zeigen(time1, time2, 1));
+		//System.out.println(stationPreS.acc_Zeigen(time1, time2, 1));
 		System.out.println("statespace size "+stationPreS.stationTrans.getStateSpace());
 		System.out.println(stationPreS.stationTrans.getRelate_station());
 		System.out.println("station-associated prediction :"+acc);

@@ -8,6 +8,8 @@ import mongodb.QueryBls;
 
 import stationTransition.MultiTransitionS;
 import util.ArrayHelper;
+import util.PredictDis;
+import util.StateSet;
 import util.Station;
 import util.StationInfo;
 import util.StationSequence;
@@ -126,6 +128,7 @@ public class MultiPreS {
 			List<Integer> array;
 			if(isDayModel==0) array= sequence.findBydayProcess(station, startTime, endTime, mod);
 			else array= sequence.findProcess(station, startTime, endTime, mod);
+			PredictDis.dealSequence(array, multiTrans.getStateSpace());
 			array_relate.add(array);
 		}
 	}
@@ -148,7 +151,7 @@ public class MultiPreS {
 		if(isDayModel==0) array = sequence.findBydayProcess( stationId, startTime, endTime, mod);
 		else array = sequence.findProcess( stationId, startTime, endTime, mod);
 		int length = array.size();
-		
+		PredictDis.dealSequence(array, multiTrans.getStateSpace());
 		//System.out.println(length);
 		int accurrate=0;
 		for(int  i =0 ;i< length-1; i++){
@@ -170,8 +173,14 @@ public class MultiPreS {
 //			result[1][array_relate.get(0).get(i)/mode] = 1.0;
 //			result[2][array_relate.get(1).get(i)/mode] = 1.0;
 			for(int j=0;j<multiTrans.getClusterNum();j++){
-				if(j==0)result[0][array.get(i)/mode>multiTrans.getStateSpace()-1?multiTrans.getStateSpace()-1:array.get(i)/mode]=1.0;
-				else result[j][array_relate.get(j-1).get(i)/mode>multiTrans.getStateSpace()-1?multiTrans.getStateSpace()-1:array_relate.get(j-1).get(i)/mode]=1.0;
+				if(j==0)
+					//result[0][array.get(i)/mode>multiTrans.getStateSpace()-1?multiTrans.getStateSpace()-1:array.get(i)/mode]=1.0;
+					StateSet.setState(result[0], multiTrans.getStateSpace(), 
+							array.get(i)/mode>multiTrans.getStateSpace()-1?multiTrans.getStateSpace()-1:array.get(i)/mode);
+				else 
+					//result[j][array_relate.get(j-1).get(i)/mode>multiTrans.getStateSpace()-1?multiTrans.getStateSpace()-1:array_relate.get(j-1).get(i)/mode]=1.0;
+					StateSet.setState(result[j], multiTrans.getStateSpace(),
+							array_relate.get(j-1).get(i)/mode>multiTrans.getStateSpace()-1?multiTrans.getStateSpace()-1:array_relate.get(j-1).get(i)/mode);
 			}
 			result=prediction(result);
 			List<Integer> pre_topN= ArrayHelper.getTopN(result[0], topN);
@@ -197,11 +206,13 @@ public class MultiPreS {
 		StationSequence sequence  = new StationSequence();
 		if(isDayModel==0) array = sequence.findBydayProcess( stationId, startTime, endTime, mod);
 		else array = sequence.findProcess( stationId, startTime, endTime, mod);
+		PredictDis.dealSequence(array, multiTrans.getStateSpace());
 		int length = array.size();
 		System.out.println(array.subList(order, length));
 		List<Integer> preList = new ArrayList<Integer>();
 		//System.out.println(length);
 		int accurrate=0;
+		double preBias =0.0;
 		double[][] result = new double[multiTrans.getClusterNum()][multiTrans.getStateSpace()];
 		int stateSpace = multiTrans.getStateSpace();
 		for(int  i =0 ;i< length-order; i++){
@@ -212,13 +223,17 @@ public class MultiPreS {
 
 				for (int j = 0; j < multiTrans.getClusterNum(); j++) {
 					if (j == 0)
-						result[0][array.get(i+k) / mode > stateSpace - 1 ? stateSpace - 1
-								: array.get(i+k) / mode] += multiTrans.getParaList().get(order - 1
-								- k);
+//						result[0][array.get(i+k) / mode > stateSpace - 1 ? stateSpace - 1
+//								: array.get(i+k) / mode] += multiTrans.getParaList().get(order - 1
+//								- k);
+					StateSet.setState(result[0], stateSpace, array.get(i+k) / mode > stateSpace - 1 ? stateSpace - 1
+							: array.get(i+k) / mode, multiTrans.getParaList().get(order - 1- k));
 					else
-						result[j][array_relate.get(j-1).get(i+k) / mode > stateSpace - 1 ? stateSpace - 1
-								: array_relate.get(j-1).get(i+k) / mode] +=  multiTrans.getParaList().get(order - 1
-										- k);
+						StateSet.setState(result[j], stateSpace, array_relate.get(j-1).get(i+k) / mode > stateSpace - 1 ? stateSpace - 1
+								: array_relate.get(j-1).get(i+k) / mode,  multiTrans.getParaList().get(order - 1- k));
+//						result[j][array_relate.get(j-1).get(i+k) / mode > stateSpace - 1 ? stateSpace - 1
+//								: array_relate.get(j-1).get(i+k) / mode] +=  multiTrans.getParaList().get(order - 1
+//										- k);
 				}
 			}
 			
@@ -228,7 +243,11 @@ public class MultiPreS {
 			result=prediction(result);
 			//Matrix.print(result, 3,stateSpace);
 			List<Integer> pre_topN= ArrayHelper.getTopN(result[0], topN);
-			preList.add(ArrayHelper.getMinDisState(pre_topN, array.get(i+order)/mode)*mode);
+			//preList.add(ArrayHelper.getMinDisState(pre_topN, array.get(i+order)/mode)*mode);
+			int state = ArrayHelper.getMinDisState(pre_topN, array.get(i+order)/mode)*mode;
+			preList.add(state);
+			preBias += array.get(i+order)>0?(double)Math.abs(array.get(i+order)-state)/array.get(i+order):
+				(double)Math.abs(array.get(i+order)-state)/mode-1;
 			if(ArrayHelper.isPredic(pre_topN, array.get(i+order)/mode, ArrayHelper.pre)){
 				accurrate+=1;
 			}
@@ -236,7 +255,7 @@ public class MultiPreS {
 		}
 		System.out.println(preList);
 		System.out.println("accurate "+accurrate);
-		
+		System.out.println("preBias "+preBias/(length-order));
 		return ((double)accurrate/(length-order));
 	}
 	public double acc_Zeigen(String time1, String time2,int topN){
@@ -296,21 +315,21 @@ public class MultiPreS {
 	}
 	public static void testN(){
 		String startTime = "06:30:00", endTime = "18:59:59";
-		String time1 =  "2015-12-13 06:30:00" ,time2 =  "2015-12-13 18:59:59";
+		String time1 =  "2015-12-11 06:30:00" ,time2 =  "2015-12-11 18:59:59";
 		
 		StationSequence sequence = new StationSequence();
 		
 				MultiPreS multiPreS  = 
-				new MultiPreS( "12111300000000045323", startTime, endTime,2,6, 10*60,3);
+				new MultiPreS( "12111300000000045323", startTime, endTime,2,1, 10*60,3);
 		
 		System.out.println("para "+multiPreS.multiTrans.getParaList());
 		
 		
 		
-		double acc = multiPreS.accN(time1, time2,2);
+		double acc = multiPreS.accN(time1, time2,1);
 		System.out.println("multi prediction :"+acc);
 		
-		System.out.println(multiPreS.acc_Zeigen(time1, time2, 2));
+		System.out.println(multiPreS.acc_Zeigen(time1, time2, 1));
 		System.out.println("statespace size "+multiPreS.multiTrans.getStateSpace());
 		System.out.println("clusterNum  "+multiPreS.multiTrans.getClusterNum());
 		//System.out.println(linePreSS.lineTrans.getRelate_segment());
@@ -320,7 +339,7 @@ public class MultiPreS {
 	}
 	public static void testMulti_gene(){
 		String startTime = "06:30:00", endTime = "18:59:59";
-		String time1 =  "2015-12-13 06:30:00" ,time2 =  "2015-12-13 18:59:59";
+		String time1 =  "2015-12-11 06:30:00" ,time2 =  "2015-12-11 18:59:59";
 //		MultiPreSS multiPreSS  = 
 //				new MultiPreSS(35632502, "12111300000000045323", startTime, endTime,2,5, 30*60);
 		
@@ -339,10 +358,10 @@ public class MultiPreS {
 			if(StationInfo.getNear(sta, 1, 200).size() ==0) continue;
 			
 			
-			GeneralPreS generalPreSS =  new GeneralPreS( sta, startTime, endTime,2,5, 10*60);
+			GeneralPreS generalPreSS =  new GeneralPreS( sta, startTime, endTime,2,5, 15*60);
 			
-			StationPreS stationPreS = new StationPreS(sta, startTime, endTime, 2, 5, 10*60);
-			StationPreS stationPreS_3 = new StationPreS(sta, startTime, endTime, 2, 5, 10*60,3);
+			StationPreS stationPreS = new StationPreS(sta, startTime, endTime, 2, 5, 15*60);
+			StationPreS stationPreS_3 = new StationPreS(sta, startTime, endTime, 2, 5, 15*60,3);
 			MultiPreS multiPreS  = 
 					new MultiPreS( sta, startTime, endTime,2,5, 10*60,1);
 			MultiPreS multiPreS_3  = 
@@ -368,14 +387,66 @@ public class MultiPreS {
 			list.get(i).append("MultiAcc", multiAcc);
 			list.get(i).append("MultiAcc3order", multiAcc3order);
 			//list.get(i).append("Gene_zAcc", gene_zAcc);
-			MongoDBAssis.getDb().getCollection("staPre_6day_10min_mode5_pre1").insert(list.get(i));
-			//System.out.println(list.get(i));
+			//MongoDBAssis.getDb().getCollection("staPre_5day_10min_mode5_pre1_pretest").insert(list.get(i));
+			System.out.println(list.get(i));
+		}
+	}
+	public static void test_more(){
+		String startTime = "06:30:00", endTime = "18:59:59";
+		String time1 =  "2015-12-11 06:30:00" ,time2 =  "2015-12-11 18:59:59";
+//		MultiPreSS multiPreSS  = 
+//				new MultiPreSS(35632502, "12111300000000045323", startTime, endTime,2,5, 30*60);
+		
+		
+		Station station = new Station();
+		StationSequence sequence = new StationSequence();
+		List<BasicDBObject> list=Station.getStaFromAnaly();
+		
+	
+		
+		
+		for(int i =0;i<1;i++){
+			System.out.println("i "+i);
+			String sta ="12111300000000045323";
+			if(!sequence.hasWorkdayData( sta, startTime, endTime, 10*60)||!sequence.hasData(sta, time1, time2, 10*60)) continue;
+			if(StationInfo.getNear(sta, 1, 200).size() ==0) continue;
+			
+			int mode =10;
+			GeneralPreS generalPreSS =  new GeneralPreS( sta, startTime, endTime,2,mode, 30*60);
+			
+			StationPreS stationPreS = new StationPreS(sta, startTime, endTime, 2, mode, 30*60);
+			StationPreS stationPreS_3 = new StationPreS(sta, startTime, endTime, 2, mode, 30*60,3);
+			MultiPreS multiPreS  = 
+					new MultiPreS( sta, startTime, endTime,2,mode, 30*60,1);
+			MultiPreS multiPreS_3  = 
+					new MultiPreS( sta, startTime, endTime,2,mode, 30*60,3);
+			
+			System.out.println(multiPreS.multiTrans.getClusterNum());
+			
+			double GeneAcc = generalPreSS.acc(time1, time2, 1);
+			System.out.println("general "+GeneAcc);
+			double staAcc = stationPreS.acc(time1, time2, 1);
+			System.out.println("staweight "+staAcc);
+			double staAcc3order = stationPreS_3.accN(time1, time2, 1);
+			System.out.println("staweightStep "+staAcc3order);
+			double multiAcc = multiPreS.accN(time1, time2,1);
+			System.out.println("multi "+multiAcc);
+			double multiAcc3order = multiPreS_3.accN(time1, time2,1);
+			System.out.println("multiStep "+multiAcc3order);
+			//double multi_zAcc = multiPreSS.acc_Zeigen(time1, time2, 2);
+			//double gene_zAcc = generalPreSS.acc_Zeigen(time1, time2, 2);
+			
+			
+			
+			System.out.println("multi3order "+multiAcc+" gene "+GeneAcc);
+			
+			
 		}
 	}
 	public static void main(String []args){
 		int segmentId = 36371609;
 		int sngSerialId = 4;
-		testMulti_gene();
+		test_more();
 		
 		
 		//linePreSS.setMode(3);

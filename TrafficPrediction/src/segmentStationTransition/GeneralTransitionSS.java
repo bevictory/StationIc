@@ -5,6 +5,7 @@ import java.util.List;
 
 import util.ArrayHelper;
 import util.SegmentStationSequence;
+import util.StateSet;
 import util.StationSequence;
 import decomposition.Matrix;
 import decomposition.Tensor_3order;
@@ -247,7 +248,8 @@ public class GeneralTransitionSS {
 		double[] state = new double[stateSpace];		
 		double[][] matrix = getTransiton();
 		for(int i=0;i<order;i++){
-			state[list.get(i)/mode>stateSpace-1?stateSpace-1:list.get(i)/mode] += para.get(order-1-i);
+			//state[list.get(i)/mode>stateSpace-1?stateSpace-1:list.get(i)/mode] += para.get(order-1-i);
+			StateSet.setState(state, stateSpace, list.get(i)/mode>stateSpace-1?stateSpace-1:list.get(i)/mode,para.get(order-1-i));
 		}
 		//System.out.println(state_);
 		

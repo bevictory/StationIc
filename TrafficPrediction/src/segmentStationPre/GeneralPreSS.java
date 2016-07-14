@@ -1,5 +1,6 @@
 package segmentStationPre;
 
+import java.lang.Thread.State;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,6 +14,7 @@ import stationTransition.GeneralTransition;
 import transition.Transition;
 import util.ArrayHelper;
 import util.SegmentStationSequence;
+import util.StateSet;
 import util.StationSequence;
 import decomposition.DealVector;
 import decomposition.GeneralPower;
@@ -94,7 +96,8 @@ public class GeneralPreSS {
 	public double[] prediction(double[] res, int sta){
 		int stateSpace = generalTrans.getStateSpace();
 		double[] state = new double[generalTrans.getStateSpace()];
-		state[sta/mode>stateSpace-1?stateSpace-1:sta/mode]=1.0;
+		//state[sta/mode>stateSpace-1?stateSpace-1:sta/mode]=1.0;
+		StateSet.setState(state, stateSpace, sta/mode>stateSpace-1?stateSpace-1:sta/mode);
 		res = Matrix.multip_vector(generalTrans.getTransiton(), state, generalTrans.getStateSpace());
 		return res;
 		
@@ -128,6 +131,7 @@ public class GeneralPreSS {
 		//System.out.println(array);
 		int accurrate=0;
 		List<Integer> preList  = new ArrayList<Integer>();
+		double preBias =0.0;
 		for( int i =2 ;i < array.size()-1; i++){
 			double[] res =null;
 			//pre.add(prediction(res, array.get(i)/mode));
@@ -139,13 +143,17 @@ public class GeneralPreSS {
 //			if(pre_topN.contains(array.get(i+1)/mode)){
 //				accurrate+=1;
 //			}
-			preList.add(ArrayHelper.getMinDisState(pre_topN, array.get(i+1)/mode)*mode);
+			int state=ArrayHelper.getMinDisState(pre_topN, array.get(i+1)/mode)*mode;
+			preList.add(state);
+			preBias += array.get(i+1)>0?(double)Math.abs(array.get(i+1)-state)/array.get(i+1):
+				(double)Math.abs(array.get(i+1)-state)/mode-1;
 			if(ArrayHelper.isPredic(pre_topN, array.get(i+1)/mode, ArrayHelper.pre)){
 				accurrate+=1;
 			}
 		}
 		System.out.println(preList);
 		System.out.println("accurrate "+accurrate);
+		System.out.println("preBias "+preBias/(array.size()-3));
 //		System.out.println("pre "+pre.size());
 //		System.out.println(pre);
 //		
@@ -201,7 +209,8 @@ public class GeneralPreSS {
 		double[] state = new double[stateSpace];		
 		double[][] matrix = generalTrans.getTransiton();
 		for(int i=0;i<order;i++){
-			state[list.get(i)/mode>stateSpace-1?stateSpace-1:list.get(i)/mode] += generalTrans.getPara().get(order-1-i);
+			//state[list.get(i)/mode>stateSpace-1?stateSpace-1:list.get(i)/mode] += generalTrans.getPara().get(order-1-i);
+			StateSet.setState(state, stateSpace, list.get(i)/mode>stateSpace-1?stateSpace-1:list.get(i)/mode,generalTrans.getPara().get(order-1-i));
 		}
 		//System.out.println(state_);
 		
@@ -234,7 +243,7 @@ public class GeneralPreSS {
 			//DealVector.sum(result, generalTrans.getStateSpace());
 			List<Integer> pre_topN= ArrayHelper.getTopN(result, topN);
 			//DealVector.print(result, lineTrans.getStateSpace());
-			System.out.println("pre_topN "+pre_topN);
+			//System.out.println("pre_topN "+pre_topN);
 			//System.out.println("actual "+array.get(i+1)/mode);
 			preList.add(ArrayHelper.getMinDisState(pre_topN, array.get(i+order)/mode));
 			if(ArrayHelper.isPredic(pre_topN, array.get(i+order)/mode, ArrayHelper.pre)){
@@ -266,8 +275,8 @@ public class GeneralPreSS {
 	}
 	public static void test(){
 		String startTime = "06:30:00", endTime = "18:59:59";
-		String time1 =  "2015-12-10 06:30:00" ,time2 =  "2015-12-10 18:59:59";
-		GeneralPreSS generalPre  = new GeneralPreSS(35632502, "12111300000000045323", startTime, endTime,2,4, 15*60);
+		String time1 =  "2015-12-11 06:30:00" ,time2 =  "2015-12-11 18:59:59";
+		GeneralPreSS generalPre  = new GeneralPreSS(35632502, "12111300000000045323", startTime, endTime,2,1, 15*60);
 		//generalPre.setMode(3);
 //		System.out.println(generalPre.acc(time1, time2));
 		double[][]matrix =generalPre.generalTrans.getTransiton();
@@ -284,9 +293,9 @@ public class GeneralPreSS {
 		//Matrix.print(generalPre.generalTrans.getTransiton(), generalPre.generalTrans.getStateSpace());
 	}
 	public static void testN(){
-		String startTime = "06:30:00", endTime = "08:59:59";
-		String time1 =  "2015-12-10 06:30:00" ,time2 =  "2015-12-11 08:59:59";
-		GeneralPreSS generalPre  = new GeneralPreSS(35557702, "12111300000000045391", 
+		String startTime = "06:30:00", endTime = "09:59:59";
+		String time1 =  "2015-12-11 06:30:00" ,time2 =  "2015-12-11 09:59:59";
+		GeneralPreSS generalPre  = new GeneralPreSS(35632502, "12111300000000045323", 
 				startTime, endTime,2,1, 10*60,3);
 		//generalPre.setMode(3);
 //		System.out.println(generalPre.acc(time1, time2));
@@ -307,7 +316,7 @@ public class GeneralPreSS {
 		int segmentId = 35610028;
 		int sngSerialId = 4;
 		//testN();
-		test();
+		testN();
 		
 		
 	}

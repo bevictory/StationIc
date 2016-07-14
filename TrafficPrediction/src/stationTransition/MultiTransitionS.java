@@ -10,6 +10,8 @@ import transition.MultiTransition;
 
 import util.ArrayHelper;
 
+import util.PredictDis;
+import util.StateSet;
 import util.Station;
 import util.StationSequence;
 
@@ -70,6 +72,12 @@ public class MultiTransitionS {
 		clusterList = new ArrayList<String>();
 		getCluster( stationId, startTime, endTime);
 		setStateSpace(getMaxState(ArrayHelper.getMax(array))/mode+1);
+		PredictDis.dealSequence(array, stateSpace);
+		for(int i=0;i<array_cluster.size();i++){
+			PredictDis.dealSequence(array_cluster.get(i), stateSpace);
+		}
+		
+		
 		transition  = new double[array_cluster.size()+1][array_cluster.size()+1][stateSpace][stateSpace];
 		setPara();
 		getTransition();
@@ -227,6 +235,12 @@ public class MultiTransitionS {
 		clusterList = new ArrayList<String>();
 		getCluster( stationId, startTime, endTime);
 		setStateSpace(getMaxState(ArrayHelper.getMax(array))/mode+1);
+		PredictDis.dealSequence(array, stateSpace);
+		for(int i=0;i<array_cluster.size();i++){
+			PredictDis.dealSequence(array_cluster.get(i), stateSpace);
+		}
+		
+		
 		transition  = new double[array_cluster.size()+1][array_cluster.size()+1][stateSpace][stateSpace];
 		paraN = new double[order][getClusterNum()][getClusterNum()];
 		paraList = new ArrayList<Double>();
@@ -369,13 +383,17 @@ public class MultiTransitionS {
 
 				for (int j = 0; j < getClusterNum(); j++) {
 					if (j == 0)
-						result[0][array.get(i+k) / mode > stateSpace - 1 ? stateSpace - 1
-								: array.get(i+k) / mode] += paraList.get(order - 1
-								- k);
+//						result[0][array.get(i+k) / mode > stateSpace - 1 ? stateSpace - 1
+//								: array.get(i+k) / mode] += paraList.get(order - 1
+//								- k);
+						StateSet.setState(result[0], stateSpace, array.get(i+k) / mode > stateSpace - 1 ? stateSpace - 1
+								: array.get(i+k) / mode, paraList.get(order - 1- k));
 					else
-						result[j][array_cluster.get(j-1).get(i+k) / mode > stateSpace - 1 ? stateSpace - 1
-								: array_cluster.get(j-1).get(i+k) / mode] +=  paraList.get(order - 1
-										- k);
+						StateSet.setState(result[j], stateSpace, array_cluster.get(j-1).get(i+k) / mode > stateSpace - 1 ? stateSpace - 1
+								: array_cluster.get(j-1).get(i+k) / mode, paraList.get(order - 1- k));
+//						result[j][array_cluster.get(j-1).get(i+k) / mode > stateSpace - 1 ? stateSpace - 1
+//								: array_cluster.get(j-1).get(i+k) / mode] +=  paraList.get(order - 1
+//										- k);
 				}
 			}
 			result=prediction(result);
@@ -495,7 +513,8 @@ public class MultiTransitionS {
 			DealVector.reset(state, stateSpace);
 			
 			
-			state[list.get(i)/mode>stateSpace-1?stateSpace-1:list.get(i)/mode] =1.0;
+			//state[list.get(i)/mode>stateSpace-1?stateSpace-1:list.get(i)/mode] =1.0;
+			StateSet.setState(state, stateSpace, list.get(i)/mode>stateSpace-1?stateSpace-1:list.get(i)/mode);
 			DealVector.add(result_, Matrix.order_vector(tensor[i], state, stateSpace), stateSpace, 1);
 			//Matrix.print(tensor[i], stateSpace);
 			

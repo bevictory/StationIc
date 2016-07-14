@@ -9,24 +9,25 @@ import java.util.Map;
 import decomposition.DealVector;
 
 public class ArrayHelper {
+//	public static double pre=0.3;
 	public static int pre=1;
-	
-	public static int getPre() {
-		return pre;
-	}
-
-	public static void setPre(int pre) {
-		ArrayHelper.pre = pre;
-	}
+//	public static double getPre() {
+//		return pre;
+//	}
+//
+//	public static void setPre(double pre) {
+//		ArrayHelper.pre = pre;
+//	}
 
 	public static int getMax(List<Integer> array){
 		int max =0;
 		for(int i=0 ;i<array.size();i++){
-			if(max<array.get(i)){
-				max = array.get(i);
+			if(max<Math.abs(array.get(i))){
+				max =Math.abs(array.get(i));
 			}
 		}
-		return max+1;
+		if(PredictDis.isPreDis)return 2*max+1;
+		else return max +1;
 	}
 	
 	public static double[] getInitState(List<Integer> array){
@@ -47,12 +48,19 @@ public class ArrayHelper {
 		//boolean isNegative =false;
 		for(int i=0;i<array.size();i++){
 			min = Math.min(Math.abs(state-array.get(i)), min);
+//			int dis=0;
+//			if(state ==0) dis = array.get(i)>=2?2:array.get(i);
+//			else dis = Math.abs(state-array.get(i))/state;
+//			if(array.get(i) == 0) dis = 1;
+//			min = Math.min(dis , min);
+			
 //			if(Math.abs(state-array.get(i)) <min){
 //				min = Math.abs(state-array.get(i));
 //				if(state <array.get(i)) isNegative = true;
 //				else isNegative = false;
 //			}
 		}
+		//if(min <=state*pre) return 0;
 		  return min;
 	}
 	
@@ -69,6 +77,17 @@ public class ArrayHelper {
 		}
 		  return loc;
 	}
+//	public static boolean isPredic(List<Integer> list, int prediction,double mode){
+//		int m =(int) (prediction *mode);
+//		if(m==0) m =1;
+//		for(int i =-m;i<=m;i++){
+//			if(list.contains(prediction+i)){
+//				//System.out.print((prediction+i)+" ");
+//				return true;
+//			}
+//		}
+//		return false;
+//	}
 	public static boolean isPredic(List<Integer> list, int prediction,int mode){
 		
 		for(int i =-mode;i<=mode;i++){

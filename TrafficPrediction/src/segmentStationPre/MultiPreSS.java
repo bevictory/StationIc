@@ -21,6 +21,7 @@ import segmentStationTransition.GeneralTransitionSS;
 
 import segmentStationTransition.MultiTransitionSS;
 
+
 import transition.MultiTransition;
 import transition.Transition;
 import util.ArrayHelper;
@@ -217,6 +218,7 @@ public class MultiPreSS {
 		int accurrate=0;
 		double[][] result = new double[multiTrans.getClusterNum()][multiTrans.getStateSpace()];
 		int stateSpace = multiTrans.getStateSpace();
+		double preBias=0.0;
 		for(int  i =0 ;i< length-order; i++){
 		
 			Matrix.reset(result, multiTrans.getClusterNum(),stateSpace);
@@ -241,13 +243,19 @@ public class MultiPreSS {
 			result=prediction(result);
 			//Matrix.print(result, 3,stateSpace);
 			List<Integer> pre_topN= ArrayHelper.getTopN(result[0], topN);
-			preList.add(ArrayHelper.getMinDisState(pre_topN, array.get(i+order)/mode)*mode);
+			//preList.add(ArrayHelper.getMinDisState(pre_topN, array.get(i+order)/mode)*mode);
+			int state = ArrayHelper.getMinDisState(pre_topN, array.get(i+order)/mode)*mode;
+			preList.add(state);
+			preBias += array.get(i+order)>0?(double)Math.abs(array.get(i+order)-state)/array.get(i+order):
+				(double)Math.abs(array.get(i+order)-state)/mode-1;
+			
 			if(ArrayHelper.isPredic(pre_topN, array.get(i+order)/mode, ArrayHelper.pre)){
 				accurrate+=1;
 			}
 			
 		}
 		System.out.println(preList);
+		System.out.println("preBias "+preBias/(length-order));
 		System.out.println("accurate "+accurrate);
 		
 		return ((double)accurrate/(length-order));
@@ -332,8 +340,8 @@ public class MultiPreSS {
 		//double [][]matrix = multiPreSS.multiTrans.getTransition()[0][0];
 	}
 	public static void testMulti_gene(){
-		String startTime = "15:30:00", endTime = "18:59:59";
-		String time1 =  "2015-12-10 15:30:00" ,time2 =  "2015-12-11 18:59:59";
+		String startTime = "06:30:00", endTime = "18:59:59";
+		String time1 =  "2015-12-11 06:30:00" ,time2 =  "2015-12-11 18:59:59";
 //		MultiPreSS multiPreSS  = 
 //				new MultiPreSS(35632502, "12111300000000045323", startTime, endTime,2,5, 30*60);
 		
@@ -345,25 +353,34 @@ public class MultiPreSS {
 	
 		
 		
-		for(int i =0;i<100;i++){
+		for(int i =0;i<1;i++){
 			int seg =list.get(i).getInt("segmentId") ;
 			String sta =list.get(i).getString("stationId");
 			if(!sequence.hasWorkdayData(seg, sta, startTime, endTime, 15*60)
 					||!sequence.hasData(seg, sta, time1, time2, 15*60)) continue;
 			if(QueryBls.getSameStation(MongoDBAssis.getDb(), seg, sta).size() ==0) continue;
+			int mode =4;
+			GeneralPreSS generalPreSS =  new GeneralPreSS( seg,sta, startTime, endTime,2,mode, 15*60);
+			
+			LinePreSS LinePreSS = new LinePreSS(seg,sta, startTime, endTime, 2, mode, 15*60);
+			LinePreSS LinePreSS_3 = new LinePreSS(seg,sta, startTime, endTime, 2, mode, 15*60,3);
 			MultiPreSS multiPreSS  = 
-					new MultiPreSS(seg, sta, startTime, endTime,2,1, 10*60,3);
+					new MultiPreSS(seg, sta, startTime, endTime,2,mode, 15*60,1);
+			MultiPreSS multiPreSS_3  = 
+					new MultiPreSS( seg,sta, startTime, endTime,2,mode, 15*60,3);
+			
 			System.out.println(multiPreSS.multiTrans.getClusterNum());
-			GeneralPreSS generalPreSS =  new GeneralPreSS(seg, sta, startTime, endTime,2,1, 10*60);
-			double multiAcc = multiPreSS.accN(time1, time2,2);
-			//double multi_zAcc = multiPreSS.acc_Zeigen(time1, time2, 2);
-			//double gene_zAcc = generalPreSS.acc_Zeigen(time1, time2, 2);
-			double GeneAcc = generalPreSS.acc(time1, time2, 2);
-			System.out.println("multi "+multiAcc+" gene "+GeneAcc);
-			//list.get(i).append("MultiAcc", multiAcc);
-			//list.get(i).append("multi_zAcc", multi_zAcc);
-			//list.get(i).append("GeneAcc", GeneAcc);
-			//list.get(i).append("Gene_zAcc", gene_zAcc);
+			int topN=1;
+			double GeneAcc = generalPreSS.acc(time1, time2, topN);
+			System.out.println("general "+GeneAcc);
+			double staAcc = LinePreSS.acc(time1, time2, topN);
+			System.out.println("staweight "+staAcc);
+			double staAcc3order = LinePreSS_3.accN(time1, time2, topN);
+			System.out.println("staweightStep "+staAcc3order);
+			double multiAcc = multiPreSS.accN(time1, time2,topN);
+			System.out.println("multi "+multiAcc);
+			double multiAcc3order = multiPreSS_3.accN(time1, time2,topN);
+			System.out.println("multiStep "+multiAcc3order);
 			//MongoDBAssis.getDb().getCollection("segStaMultiPre_mode5_mod30_ouji").insert(list.get(i));
 			//System.out.println(list.get(i));
 		}
@@ -371,7 +388,7 @@ public class MultiPreSS {
 	public static void main(String []args){
 		int segmentId = 36371609;
 		int sngSerialId = 4;
-		testN();
+		testMulti_gene();
 		
 		
 		//linePreSS.setMode(3);

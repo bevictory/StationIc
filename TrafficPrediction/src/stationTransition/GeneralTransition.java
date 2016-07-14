@@ -7,7 +7,9 @@ import decomposition.Matrix;
 import decomposition.Tensor_3order;
 
 import util.ArrayHelper;
+import util.PredictDis;
 import util.SegmentStationSequence;
+import util.StateSet;
 import util.StationSequence;
 
 public class GeneralTransition {
@@ -54,6 +56,9 @@ public class GeneralTransition {
 			array = sequence.findWorkDayProcess(stationId, startTime, endTime,
 					mod);
 		setStateSpace(ArrayHelper.getMax(array) / mode + 1);
+		
+		PredictDis.dealSequence(array, stateSpace);
+		//System.out.println(array);
 		initState = ArrayHelper.getInitState(array);
 		transition = new double[stateSpace][stateSpace];
 		 tensor = new double[order][stateSpace][stateSpace];
@@ -143,7 +148,10 @@ public class GeneralTransition {
 			array = sequence.findWorkDayProcess(stationId, startTime, endTime,
 					mod);
 		setStateSpace(ArrayHelper.getMax(array) / mode + 1);
+		PredictDis.dealSequence(array, stateSpace);
 		initState = ArrayHelper.getInitState(array);
+		
+		
 		
 		para = new ArrayList<Double>();
 		transition = new double[stateSpace][stateSpace];
@@ -240,7 +248,7 @@ public class GeneralTransition {
 			//
 
 			double[] result = prediction(res, list_order);
-			List<Integer> pre_topN = ArrayHelper.getTopN(result, 2);
+			List<Integer> pre_topN = ArrayHelper.getTopN(result, 1);
 			// DealVector.print(result, lineTrans.getStateSpace());
 			// System.out.println("pre_topN "+pre_topN);
 			// System.out.println("actual "+array.get(i+1)/mode);
@@ -255,7 +263,9 @@ public class GeneralTransition {
 		double[] state = new double[stateSpace];
 		double[][] matrix = getTransiton();
 		for (int i = 0; i < order; i++) {
-			state[list.get(i)/mode>stateSpace-1?stateSpace-1:list.get(i)/mode] += para.get(order-1-i);
+			//state[list.get(i)/mode>stateSpace-1?stateSpace-1:list.get(i)/mode] += para.get(order-1-i);
+			StateSet.setState(state, stateSpace, list.get(i)/mode>stateSpace-1?stateSpace-1:list.get(i)/mode, 
+					para.get(order-1-i));
 		}
 		// System.out.println(state_);
 
